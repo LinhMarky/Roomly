@@ -234,6 +234,20 @@
                     app:strokeColor="@color/roomly_primary"
                     app:cornerRadius="12dp" />
 
+                <!-- Mở màn hình quản lý khung giờ xem phòng. -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_host_detail_viewing"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:minHeight="48dp"
+                    android:text="Quản lý khung giờ"
+                    android:textAllCaps="false"
+                    android:textColor="@color/roomly_primary"
+                    app:strokeColor="@color/roomly_primary"
+                    app:cornerRadius="12dp" />
+
             </LinearLayout>
 
         </LinearLayout>
