@@ -1,0 +1,23 @@
+#!/bin/sh
+# POSIX entry point for the versioned Maven Wrapper JAR and properties.
+set -eu
+
+base_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+wrapper_jar="$base_dir/.mvn/wrapper/maven-wrapper.jar"
+
+if [ ! -f "$wrapper_jar" ]; then
+    printf '%s\n' "Missing Maven Wrapper JAR: $wrapper_jar" >&2
+    exit 1
+fi
+
+if [ -n "${JAVA_HOME:-}" ]; then
+    java_cmd="$JAVA_HOME/bin/java"
+else
+    java_cmd=java
+fi
+
+export MAVEN_PROJECTBASEDIR="$base_dir"
+# MAVEN_OPTS intentionally expands into JVM arguments, like mvnw.cmd.
+exec "$java_cmd" ${MAVEN_OPTS:-} \
+    "-Dmaven.multiModuleProjectDirectory=$base_dir" \
+    -classpath "$wrapper_jar" org.apache.maven.wrapper.MavenWrapperMain "$@"
