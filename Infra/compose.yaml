@@ -1,70 +1,58 @@
-name: homely-demo
+name: roomly
+
 services:
   mysql:
     image: mysql:8.4
     environment:
-      MYSQL_DATABASE: homely
-      MYSQL_USER: homely
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: ${ROOMLY_DATABASE:-roomly}
+      MYSQL_USER: ${ROOMLY_DB_USER:-roomly}
+      MYSQL_PASSWORD: ${ROOMLY_DB_PASSWORD:?Set ROOMLY_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${ROOMLY_MYSQL_ROOT_PASSWORD:?Set ROOMLY_MYSQL_ROOT_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./roomly/init/001_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
     healthcheck:
       test: [CMD-SHELL, 'mysqladmin ping -h 127.0.0.1 --silent']
       interval: 5s
       timeout: 5s
       retries: 30
     ports:
-      - "127.0.0.1:3307:3306"
-  minio:
-    image: homely-minio-source:release-2025-04-22
-    build: ./minio
-    command: server /data --console-address :9001
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:?Set MINIO_ACCESS_KEY in .env}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:?Set MINIO_SECRET_KEY in .env}
-    volumes:
-      - minio_data:/data
-    healthcheck:
-      test: [CMD-SHELL, 'wget -q -O /dev/null http://127.0.0.1:9000/minio/health/ready']
-      interval: 5s
-      timeout: 5s
-      retries: 30
-    ports:
-      - "127.0.0.1:9000:9000"
-      - "127.0.0.1:9001:9001"
-  mailpit:
-    image: axllent/mailpit:v1.31.3
-    ports:
-      - "127.0.0.1:8025:8025"
-      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:${ROOMLY_MYSQL_HOST_PORT:-3307}:3306"
+
   backend:
     build: ../backend
+    init: true
     depends_on:
       mysql:
         condition: service_healthy
-      minio:
-        condition: service_healthy
-      mailpit:
-        condition: service_started
     environment:
-      MYSQL_HOST: mysql
-      MYSQL_DB: homely
-      MYSQL_USER: homely
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
-      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
-      SMTP_HOST: mailpit
-      DEMO_ENABLED: "true"
-      DEMO_SEED: "true"
-      DEMO_PASSWORD: ${DEMO_PASSWORD:?Set DEMO_PASSWORD in .env}
-      FCM_ENABLED: "false"
-      MOCK_PAYMENT_ENABLED: "false"
-      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics
+      ROOMLY_DB_HOST: mysql
+      ROOMLY_DB_PORT: "3306"
+      # MySQL 8.4 caching_sha2_password needs TLS for the first uncached login.
+      ROOMLY_DB_SSL_MODE: REQUIRED
+      ROOMLY_DATABASE: ${ROOMLY_DATABASE:-roomly}
+      ROOMLY_DB_USER: ${ROOMLY_DB_USER:-roomly}
+      ROOMLY_DB_PASSWORD: ${ROOMLY_DB_PASSWORD}
+      ROOMLY_JWT_SECRET: ${ROOMLY_JWT_SECRET:?Set ROOMLY_JWT_SECRET}
+      ROOMLY_BIND_ADDRESS: 0.0.0.0
+      ROOMLY_HTTP_PORT: "18092"
+      ROOMLY_MEDIA_DIRECTORY: /app/media
+      ROOMLY_MOCK_PAYMENT_ENABLED: "true"
+      ROOMLY_MAIL_ENABLED: ${ROOMLY_MAIL_ENABLED:-false}
+      SMTP_HOST: ${SMTP_HOST:-localhost}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_AUTH: ${SMTP_AUTH:-true}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      SMTP_SSL: ${SMTP_SSL:-false}
+      MAIL_FROM: ${MAIL_FROM:-noreply@roomly.local}
+      ROOMLY_PUSH_ENABLED: "false"
+    volumes:
+      - media_data:/app/media
     ports:
-      - "${API_BIND_ADDRESS:-127.0.0.1}:${API_PORT:-8080}:8080"
+      - "127.0.0.1:${ROOMLY_HTTP_PORT:-18092}:18092"
+
 volumes:
   mysql_data:
-  minio_data:
+  media_data:

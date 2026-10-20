@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.example.roomly.R;
 import com.example.roomly.data.api.ApiClient;
 import com.example.roomly.data.api.ApiMapper;
 import com.example.roomly.data.model.Booking;
@@ -74,15 +73,6 @@ public final class BookingReviewFragment extends Fragment {
                     }
                 },
                 this::error);
-    }
-
-    private void open(Fragment fragment) {
-        if (!isAdded() || getParentFragmentManager().isStateSaved()) return;
-        getParentFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit();
     }
 
     private void message(String text) {

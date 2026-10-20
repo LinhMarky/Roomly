@@ -132,7 +132,7 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment {
                 && ownerId.equals(session.getUserId());
     }
 
-    /** Kiểm tra dữ liệu rồi lưu hồ sơ mẫu của đúng tài khoản. */
+    /** Kiểm tra dữ liệu rồi cập nhật hồ sơ của đúng tài khoản qua API. */
     private void saveProfile() {
         if (binding == null || !binding.btnSaveProfile.isEnabled()) {
             return;

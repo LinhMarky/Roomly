@@ -20,7 +20,6 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import com.example.roomly.ui.NavigationHelper;
 
 import com.example.roomly.data.model.HostRoom;
 import com.example.roomly.data.model.RoomCard;
@@ -30,6 +29,7 @@ import com.example.roomly.data.model.UserRole;
 import com.example.roomly.data.repository.HostRepository;
 import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentHostEditRoomBinding;
+import com.example.roomly.ui.NavigationHelper;
 import com.example.roomly.util.ImageLoader;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -533,7 +533,8 @@ public class HostEditRoomFragment extends Fragment {
                         selectedRoomType,
                         Integer.parseInt(readText(binding.edtEditRoomMaxOccupants)),
                         selectedAmenities);
-        if (!saveViewModel.begin(SessionRepository.getInstance().getCurrentSession().getUserId())) return;
+        if (!saveViewModel.begin(SessionRepository.getInstance().getCurrentSession().getUserId()))
+            return;
         HostRepository.getInstance()
                 .saveRoom(
                         roomId,
@@ -719,22 +720,38 @@ public class HostEditRoomFragment extends Fragment {
 
     private void observeSaveState() {
         saveViewModel = new ViewModelProvider(this).get(HostSaveViewModel.class);
-        saveViewModel.phase().observe(getViewLifecycleOwner(), phase -> {
-            if (binding == null) return;
-            binding.btnEditRoomSave.setEnabled(!saveViewModel.blocksNewSave());
-            binding.progressEditRoom.setVisibility(HostSaveViewModel.SAVING.equals(phase) ? View.VISIBLE : View.GONE);
-            if (HostSaveViewModel.SAVED.equals(phase)) {
-                NavigationHelper.whenResumed(this, () -> {
-                    String message = saveViewModel.consumeSuccess(
-                            SessionRepository.getInstance().getCurrentSession().getUserId());
-                    if (message == null || binding == null) return;
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
-                    getParentFragmentManager().popBackStack();
-                });
-            } else if (HostSaveViewModel.ERROR.equals(phase) || HostSaveViewModel.UNCERTAIN.equals(phase)) {
-                showError(saveViewModel.message());
-            }
-        });
+        saveViewModel
+                .phase()
+                .observe(
+                        getViewLifecycleOwner(),
+                        phase -> {
+                            if (binding == null) return;
+                            binding.btnEditRoomSave.setEnabled(!saveViewModel.blocksNewSave());
+                            binding.progressEditRoom.setVisibility(
+                                    HostSaveViewModel.SAVING.equals(phase)
+                                            ? View.VISIBLE
+                                            : View.GONE);
+                            if (HostSaveViewModel.SAVED.equals(phase)) {
+                                NavigationHelper.whenResumed(
+                                        this,
+                                        () -> {
+                                            String message =
+                                                    saveViewModel.consumeSuccess(
+                                                            SessionRepository.getInstance()
+                                                                    .getCurrentSession()
+                                                                    .getUserId());
+                                            if (message == null || binding == null) return;
+                                            Toast.makeText(
+                                                            requireContext(),
+                                                            message,
+                                                            Toast.LENGTH_LONG)
+                                                    .show();
+                                            getParentFragmentManager().popBackStack();
+                                        });
+                            } else if (HostSaveViewModel.ERROR.equals(phase)
+                                    || HostSaveViewModel.UNCERTAIN.equals(phase)) {
+                                showError(saveViewModel.message());
+                            }
+                        });
     }
-
 }

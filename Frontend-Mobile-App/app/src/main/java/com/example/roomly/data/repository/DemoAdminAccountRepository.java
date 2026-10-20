@@ -21,15 +21,13 @@ import java.util.Locale;
  */
 public final class DemoAdminAccountRepository {
 
-    private static final DemoAdminAccountRepository INSTANCE =
-            new DemoAdminAccountRepository();
+    private static final DemoAdminAccountRepository INSTANCE = new DemoAdminAccountRepository();
 
     private final List<AdminAccount> accounts = new ArrayList<>();
     private boolean initialized;
 
     /** Ngăn tạo repository từ bên ngoài. */
-    private DemoAdminAccountRepository() {
-    }
+    private DemoAdminAccountRepository() {}
 
     /** Trả về repository dùng chung. */
     public static DemoAdminAccountRepository getInstance() {
@@ -43,9 +41,7 @@ public final class DemoAdminAccountRepository {
      */
     @MainThread
     public List<AdminAccount> getAccounts(
-            @Nullable AdminAccount.Status status,
-            @Nullable String keyword
-    ) {
+            @Nullable AdminAccount.Status status, @Nullable String keyword) {
         List<AdminAccount> results = new ArrayList<>();
 
         if (!hasAdminAccess()) {
@@ -57,15 +53,12 @@ public final class DemoAdminAccountRepository {
         String query = normalizeText(keyword);
 
         for (AdminAccount account : accounts) {
-            boolean matchesStatus =
-                    status == null || account.getStatus() == status;
+            boolean matchesStatus = status == null || account.getStatus() == status;
 
             boolean matchesKeyword =
                     query.isEmpty()
-                            || normalizeText(account.getFullName())
-                            .contains(query)
-                            || normalizeText(account.getEmail())
-                            .contains(query);
+                            || normalizeText(account.getFullName()).contains(query)
+                            || normalizeText(account.getEmail()).contains(query);
 
             if (matchesStatus && matchesKeyword) {
                 results.add(account);
@@ -105,70 +98,50 @@ public final class DemoAdminAccountRepository {
     @MainThread
     public void suspendAccount(String accountId, String reason) {
         if (!hasAdminAccess()) {
-            throw new IllegalStateException(
-                    "Bạn không có quyền quản lý tài khoản."
-            );
+            throw new IllegalStateException("Bạn không có quyền quản lý tài khoản.");
         }
 
         AdminAccount account = getAccountById(accountId);
 
         if (account == null) {
-            throw new IllegalStateException(
-                    "Tài khoản không còn tồn tại."
-            );
+            throw new IllegalStateException("Tài khoản không còn tồn tại.");
         }
 
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (account.getId().equals(session.getUserId())) {
-            throw new IllegalStateException(
-                    "Không thể khóa chính tài khoản đang sử dụng."
-            );
+            throw new IllegalStateException("Không thể khóa chính tài khoản đang sử dụng.");
         }
 
         if (account.hasRole(UserRole.ADMIN)) {
-            throw new IllegalStateException(
-                    "Giao diện thử chưa hỗ trợ khóa tài khoản admin."
-            );
+            throw new IllegalStateException("Giao diện thử chưa hỗ trợ khóa tài khoản admin.");
         }
 
         if (account.getStatus() != AdminAccount.Status.ACTIVE) {
-            throw new IllegalStateException(
-                    "Tài khoản này đã bị khóa."
-            );
+            throw new IllegalStateException("Tài khoản này đã bị khóa.");
         }
 
         String trimmedReason = reason == null ? "" : reason.trim();
 
         if (trimmedReason.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Bạn cần nhập lý do khóa tài khoản."
-            );
+            throw new IllegalArgumentException("Bạn cần nhập lý do khóa tài khoản.");
         }
 
         for (int index = 0; index < accounts.size(); index++) {
             if (accounts.get(index).getId().equals(accountId)) {
-                accounts.set(
-                        index,
-                        account.withSuspension(trimmedReason)
-                );
+                accounts.set(index, account.withSuspension(trimmedReason));
                 return;
             }
         }
 
-        throw new IllegalStateException(
-                "Không thể cập nhật tài khoản."
-        );
+        throw new IllegalStateException("Không thể cập nhật tài khoản.");
     }
 
     /** Kiểm tra phiên hiện tại có quyền admin hay không. */
     private boolean hasAdminAccess() {
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
-        return session.isLoggedIn()
-                && session.hasRole(UserRole.ADMIN);
+        return session.isLoggedIn() && session.hasRole(UserRole.ADMIN);
     }
 
     /**
@@ -200,44 +173,44 @@ public final class DemoAdminAccountRepository {
             return;
         }
 
-        accounts.add(new AdminAccount(
-                "sample-tenant-01",
-                "[Mẫu] Nguyễn Minh Anh",
-                "tenant01@example.com",
-                EnumSet.of(UserRole.TENANT),
-                true,
-                AdminAccount.Status.ACTIVE,
-                ""
-        ));
+        accounts.add(
+                new AdminAccount(
+                        "sample-tenant-01",
+                        "[Mẫu] Nguyễn Minh Anh",
+                        "tenant01@example.com",
+                        EnumSet.of(UserRole.TENANT),
+                        true,
+                        AdminAccount.Status.ACTIVE,
+                        ""));
 
-        accounts.add(new AdminAccount(
-                "sample-host-01",
-                "[Mẫu] Trần Hoàng Nam",
-                "host01@example.com",
-                EnumSet.of(UserRole.TENANT, UserRole.HOST),
-                true,
-                AdminAccount.Status.ACTIVE,
-                ""
-        ));
+        accounts.add(
+                new AdminAccount(
+                        "sample-host-01",
+                        "[Mẫu] Trần Hoàng Nam",
+                        "host01@example.com",
+                        EnumSet.of(UserRole.TENANT, UserRole.HOST),
+                        true,
+                        AdminAccount.Status.ACTIVE,
+                        ""));
 
-        accounts.add(new AdminAccount(
-                "sample-tenant-02",
-                "[Mẫu] Lê Thu Hà",
-                "tenant02@example.com",
-                EnumSet.of(UserRole.TENANT),
-                false,
-                AdminAccount.Status.SUSPENDED,
-                "Lý do khóa mẫu để kiểm tra giao diện."
-        ));
+        accounts.add(
+                new AdminAccount(
+                        "sample-tenant-02",
+                        "[Mẫu] Lê Thu Hà",
+                        "tenant02@example.com",
+                        EnumSet.of(UserRole.TENANT),
+                        false,
+                        AdminAccount.Status.SUSPENDED,
+                        "Lý do khóa mẫu để kiểm tra giao diện."));
 
-        accounts.add(new AdminAccount(
-                "sample-tenant-03",
-                "[Mẫu] Phạm Đức Huy",
-                "tenant03@example.com",
-                EnumSet.of(UserRole.TENANT),
-                false,
-                AdminAccount.Status.ACTIVE,
-                ""
-        ));
+        accounts.add(
+                new AdminAccount(
+                        "sample-tenant-03",
+                        "[Mẫu] Phạm Đức Huy",
+                        "tenant03@example.com",
+                        EnumSet.of(UserRole.TENANT),
+                        false,
+                        AdminAccount.Status.ACTIVE,
+                        ""));
     }
 }

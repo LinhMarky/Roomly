@@ -14,13 +14,11 @@ import java.util.UUID;
 
 public final class DemoBookingCaseRepository {
 
-    private static final DemoBookingCaseRepository INSTANCE =
-            new DemoBookingCaseRepository();
+    private static final DemoBookingCaseRepository INSTANCE = new DemoBookingCaseRepository();
 
     private final List<BookingCase> cases = new ArrayList<>();
 
-    private DemoBookingCaseRepository() {
-    }
+    private DemoBookingCaseRepository() {}
 
     public static DemoBookingCaseRepository getInstance() {
         return INSTANCE;
@@ -29,57 +27,42 @@ public final class DemoBookingCaseRepository {
     public synchronized BookingCase getCaseByBookingId(String bookingId) {
         requireDemoAccess(null);
 
-        String cleanedId = requireText(
-                bookingId,
-                "Mã yêu cầu thuê"
-        );
+        String cleanedId = requireText(bookingId, "Mã yêu cầu thuê");
 
         return findLatestCase(cleanedId);
     }
 
     public synchronized BookingCase createDemoCase(
-            String bookingId,
-            String expectedUserId,
-            BookingCase.Type type,
-            String description
-    ) {
+            String bookingId, String expectedUserId, BookingCase.Type type, String description) {
         String userId = requireText(expectedUserId, "Mã người gửi");
         SessionState session = requireDemoAccess(userId);
 
-        String cleanedBookingId = requireText(
-                bookingId,
-                "Mã yêu cầu thuê"
-        );
+        String cleanedBookingId = requireText(bookingId, "Mã yêu cầu thuê");
 
-        Booking booking = DemoBookingRepository.getInstance()
-                .getBookingById(cleanedBookingId);
+        Booking booking = DemoBookingRepository.getInstance().getBookingById(cleanedBookingId);
 
         if (booking == null || !booking.isDemo()) {
-            throw new IllegalStateException(
-                    "Không tìm thấy yêu cầu thuê demo."
-            );
+            throw new IllegalStateException("Không tìm thấy yêu cầu thuê demo.");
         }
 
         for (BookingCase existing : cases) {
-            if (existing.getBookingId().equals(cleanedBookingId)
-                    && existing.isOpen()) {
+            if (existing.getBookingId().equals(cleanedBookingId) && existing.isOpen()) {
                 throw new IllegalStateException(
                         "Yêu cầu thuê này đã có yêu cầu hỗ trợ "
-                                + "chưa xử lý. Bạn hãy xem yêu cầu hiện tại."
-                );
+                                + "chưa xử lý. Bạn hãy xem yêu cầu hiện tại.");
             }
         }
 
-        BookingCase bookingCase = new BookingCase(
-                "DEMO-CASE-" + UUID.randomUUID(),
-                cleanedBookingId,
-                session.getUserId(),
-                type,
-                description,
-                BookingCase.Status.OPEN,
-                "",
-                System.currentTimeMillis()
-        );
+        BookingCase bookingCase =
+                new BookingCase(
+                        "DEMO-CASE-" + UUID.randomUUID(),
+                        cleanedBookingId,
+                        session.getUserId(),
+                        type,
+                        description,
+                        BookingCase.Status.OPEN,
+                        "",
+                        System.currentTimeMillis());
 
         cases.add(bookingCase);
         return bookingCase;
@@ -99,11 +82,7 @@ public final class DemoBookingCaseRepository {
             }
         }
 
-        results.sort(
-                Comparator.comparingLong(
-                        BookingCase::getCreatedAtMillis
-                ).reversed()
-        );
+        results.sort(Comparator.comparingLong(BookingCase::getCreatedAtMillis).reversed());
 
         return Collections.unmodifiableList(results);
     }
@@ -123,14 +102,8 @@ public final class DemoBookingCaseRepository {
     }
 
     public synchronized BookingCase resolveDemoCase(
-            String caseId,
-            String expectedAdminUserId,
-            BookingCase.Decision decision,
-            String note
-    ) {
-        SessionState session = requireAdminAccess(
-                requireText(expectedAdminUserId, "Mã Admin")
-        );
+            String caseId, String expectedAdminUserId, BookingCase.Decision decision, String note) {
+        SessionState session = requireAdminAccess(requireText(expectedAdminUserId, "Mã Admin"));
 
         String cleanedId = requireText(caseId, "Mã yêu cầu hỗ trợ");
 
@@ -138,20 +111,14 @@ public final class DemoBookingCaseRepository {
             BookingCase current = cases.get(index);
 
             if (current.getId().equals(cleanedId)) {
-                BookingCase updated = current.resolve(
-                        decision,
-                        note,
-                        session.getUserId()
-                );
+                BookingCase updated = current.resolve(decision, note, session.getUserId());
 
                 cases.set(index, updated);
                 return updated;
             }
         }
 
-        throw new IllegalStateException(
-                "Không tìm thấy yêu cầu hỗ trợ."
-        );
+        throw new IllegalStateException("Không tìm thấy yêu cầu hỗ trợ.");
     }
 
     private BookingCase findLatestCase(String bookingId) {
@@ -169,11 +136,8 @@ public final class DemoBookingCaseRepository {
     private SessionState requireDemoAccess(String expectedUserId) {
         SessionState session = requireSession(expectedUserId);
 
-        if (!session.hasRole(UserRole.TENANT)
-                && !session.hasRole(UserRole.HOST)) {
-            throw new IllegalStateException(
-                    "Tài khoản cần có quyền Người thuê hoặc Chủ trọ."
-            );
+        if (!session.hasRole(UserRole.TENANT) && !session.hasRole(UserRole.HOST)) {
+            throw new IllegalStateException("Tài khoản cần có quyền Người thuê hoặc Chủ trọ.");
         }
 
         return session;
@@ -183,9 +147,7 @@ public final class DemoBookingCaseRepository {
         SessionState session = requireSession(expectedUserId);
 
         if (!session.hasRole(UserRole.ADMIN)) {
-            throw new IllegalStateException(
-                    "Tài khoản không có quyền quản trị."
-            );
+            throw new IllegalStateException("Tài khoản không có quyền quản trị.");
         }
 
         return session;
@@ -193,26 +155,18 @@ public final class DemoBookingCaseRepository {
 
     private SessionState requireSession(String expectedUserId) {
         if (!BuildConfig.DEBUG) {
-            throw new IllegalStateException(
-                    "Yêu cầu hỗ trợ demo chỉ dùng trong bản debug."
-            );
+            throw new IllegalStateException("Yêu cầu hỗ trợ demo chỉ dùng trong bản debug.");
         }
 
-        SessionState session =
-                SessionRepository.getInstance().getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (!session.isLoggedIn()) {
-            throw new IllegalStateException(
-                    "Bạn cần đăng nhập để sử dụng chức năng này."
-            );
+            throw new IllegalStateException("Bạn cần đăng nhập để sử dụng chức năng này.");
         }
 
-        if (expectedUserId != null
-                && !expectedUserId.equals(session.getUserId())) {
+        if (expectedUserId != null && !expectedUserId.equals(session.getUserId())) {
             throw new IllegalStateException(
-                    "Phiên đăng nhập đã thay đổi. "
-                            + "Vui lòng mở lại màn hình."
-            );
+                    "Phiên đăng nhập đã thay đổi. " + "Vui lòng mở lại màn hình.");
         }
 
         return session;
@@ -222,9 +176,7 @@ public final class DemoBookingCaseRepository {
         String cleaned = value == null ? "" : value.trim();
 
         if (cleaned.isEmpty()) {
-            throw new IllegalArgumentException(
-                    fieldName + " không được để trống."
-            );
+            throw new IllegalArgumentException(fieldName + " không được để trống.");
         }
 
         return cleaned;

@@ -6,9 +6,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.roomly.data.model.SessionState;
 
-/**
- * Giữ trạng thái phiên dùng chung trong bộ nhớ. Chưa lưu token hoặc khôi phục phiên từ thiết bị.
- */
+/** Giữ trạng thái phiên dùng chung trong bộ nhớ và khôi phục từ dữ liệu tài khoản đã lưu. */
 public final class SessionRepository {
 
     private static final SessionRepository INSTANCE = new SessionRepository();
@@ -51,10 +49,7 @@ public final class SessionRepository {
         sessionState.setValue(session);
     }
 
-    /**
-     * Xóa trạng thái tài khoản trong bộ nhớ và chuyển về Guest. Khi nối backend, luồng đăng xuất
-     * còn phải xử lý token, kết nối chat và thông báo theo contract.
-     */
+    /** Xóa phiên đã lưu và chuyển trạng thái tài khoản trong bộ nhớ về Guest. */
     @MainThread
     public void clearLocalSession() {
         com.example.roomly.data.api.ApiClient.clearSession();

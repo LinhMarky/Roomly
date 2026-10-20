@@ -11,16 +11,11 @@ public final class BookingHandover {
             String bookingId,
             Long hostConfirmedAtMillis,
             Long tenantConfirmedAtMillis,
-            boolean demo
-    ) {
-        String normalizedId = bookingId == null
-                ? ""
-                : bookingId.trim();
+            boolean demo) {
+        String normalizedId = bookingId == null ? "" : bookingId.trim();
 
         if (normalizedId.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Mã yêu cầu thuê không được để trống."
-            );
+            throw new IllegalArgumentException("Mã yêu cầu thuê không được để trống.");
         }
 
         validateTime(hostConfirmedAtMillis);
@@ -70,9 +65,7 @@ public final class BookingHandover {
 
     public BookingHandover confirmHostDemo() {
         if (!demo) {
-            throw new IllegalStateException(
-                    "Chức năng này chỉ áp dụng cho bàn giao demo."
-            );
+            throw new IllegalStateException("Chức năng này chỉ áp dụng cho bàn giao demo.");
         }
 
         if (isHostConfirmed()) {
@@ -80,18 +73,12 @@ public final class BookingHandover {
         }
 
         return new BookingHandover(
-                bookingId,
-                System.currentTimeMillis(),
-                tenantConfirmedAtMillis,
-                true
-        );
+                bookingId, System.currentTimeMillis(), tenantConfirmedAtMillis, true);
     }
 
     public BookingHandover confirmTenantDemo() {
         if (!demo) {
-            throw new IllegalStateException(
-                    "Chức năng này chỉ áp dụng cho bàn giao demo."
-            );
+            throw new IllegalStateException("Chức năng này chỉ áp dụng cho bàn giao demo.");
         }
 
         if (isTenantConfirmed()) {
@@ -99,11 +86,7 @@ public final class BookingHandover {
         }
 
         return new BookingHandover(
-                bookingId,
-                hostConfirmedAtMillis,
-                System.currentTimeMillis(),
-                true
-        );
+                bookingId, hostConfirmedAtMillis, System.currentTimeMillis(), true);
     }
 
     public String getStatusLabel() {
@@ -124,8 +107,7 @@ public final class BookingHandover {
 
     public String getStatusDescription() {
         if (isCompleted()) {
-            return "Cả chủ trọ và người thuê đã xác nhận "
-                    + "bàn giao demo.";
+            return "Cả chủ trọ và người thuê đã xác nhận " + "bàn giao demo.";
         }
 
         if (isHostConfirmed()) {
@@ -144,9 +126,7 @@ public final class BookingHandover {
 
     private static void validateTime(Long timeMillis) {
         if (timeMillis != null && timeMillis <= 0) {
-            throw new IllegalArgumentException(
-                    "Thời gian xác nhận phải hợp lệ."
-            );
+            throw new IllegalArgumentException("Thời gian xác nhận phải hợp lệ.");
         }
     }
 }

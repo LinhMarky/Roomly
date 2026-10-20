@@ -14,8 +14,7 @@ import java.util.UUID;
 
 public final class DemoBookingRepository {
 
-    private static final DemoBookingRepository INSTANCE =
-            new DemoBookingRepository();
+    private static final DemoBookingRepository INSTANCE = new DemoBookingRepository();
 
     private final List<Booking> bookings = new ArrayList<>();
 
@@ -28,16 +27,12 @@ public final class DemoBookingRepository {
     }
 
     public synchronized List<Booking> getBookings() {
-        return Collections.unmodifiableList(
-                new ArrayList<>(bookings)
-        );
+        return Collections.unmodifiableList(new ArrayList<>(bookings));
     }
 
     public synchronized boolean hasActiveBookingForRoom(String roomId) {
         if (roomId == null || roomId.trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Mã phòng không được để trống."
-            );
+            throw new IllegalArgumentException("Mã phòng không được để trống.");
         }
 
         String normalizedRoomId = roomId.trim();
@@ -49,8 +44,7 @@ public final class DemoBookingRepository {
 
             Booking.Status status = booking.getStatus();
 
-            if (status == Booking.Status.APPROVED
-                    || status == Booking.Status.CONFIRMED) {
+            if (status == Booking.Status.APPROVED || status == Booking.Status.CONFIRMED) {
                 return true;
             }
         }
@@ -82,28 +76,25 @@ public final class DemoBookingRepository {
             Long depositVnd,
             long desiredMoveInMillis,
             int occupantCount,
-            String note
-    ) {
+            String note) {
         if (desiredMoveInMillis < dateFromToday(1)) {
-            throw new IllegalArgumentException(
-                    "Ngày dự kiến vào ở phải từ ngày mai trở đi."
-            );
+            throw new IllegalArgumentException("Ngày dự kiến vào ở phải từ ngày mai trở đi.");
         }
 
-        Booking booking = new Booking(
-                "DEMO-" + UUID.randomUUID().toString(),
-                roomId,
-                roomTitle,
-                roomAddress,
-                monthlyRentVnd,
-                depositVnd,
-                desiredMoveInMillis,
-                occupantCount,
-                note,
-                Booking.Status.PENDING,
-                System.currentTimeMillis(),
-                true
-        );
+        Booking booking =
+                new Booking(
+                        "DEMO-" + UUID.randomUUID().toString(),
+                        roomId,
+                        roomTitle,
+                        roomAddress,
+                        monthlyRentVnd,
+                        depositVnd,
+                        desiredMoveInMillis,
+                        occupantCount,
+                        note,
+                        Booking.Status.PENDING,
+                        System.currentTimeMillis(),
+                        true);
 
         bookings.add(0, booking);
 
@@ -132,9 +123,7 @@ public final class DemoBookingRepository {
             return cancelled;
         }
 
-        throw new IllegalArgumentException(
-                "Không tìm thấy yêu cầu thuê."
-        );
+        throw new IllegalArgumentException("Không tìm thấy yêu cầu thuê.");
     }
 
     public synchronized Booking approveDemoRequest(String bookingId) {
@@ -145,10 +134,7 @@ public final class DemoBookingRepository {
         return reviewDemoRequest(bookingId, false);
     }
 
-    private Booking reviewDemoRequest(
-            String bookingId,
-            boolean approve
-    ) {
+    private Booking reviewDemoRequest(String bookingId, boolean approve) {
         requireHostSession();
 
         String normalizedId = requireBookingId(bookingId);
@@ -161,23 +147,17 @@ public final class DemoBookingRepository {
             }
 
             if (!current.canReviewDemo()) {
-                throw new IllegalStateException(
-                        "Chỉ có thể xử lý yêu cầu demo đang chờ duyệt."
-                );
+                throw new IllegalStateException("Chỉ có thể xử lý yêu cầu demo đang chờ duyệt.");
             }
 
-            Booking updated = approve
-                    ? current.approveDemo()
-                    : current.rejectDemo();
+            Booking updated = approve ? current.approveDemo() : current.rejectDemo();
 
             bookings.set(index, updated);
 
             return updated;
         }
 
-        throw new IllegalArgumentException(
-                "Không tìm thấy yêu cầu thuê."
-        );
+        throw new IllegalArgumentException("Không tìm thấy yêu cầu thuê.");
     }
 
     public synchronized boolean isRoomRented(String roomId) {
@@ -201,8 +181,7 @@ public final class DemoBookingRepository {
         String normalizedId = requireBookingId(bookingId);
 
         BookingPayment latestPayment =
-                DemoBookingPaymentRepository.getInstance()
-                        .getLatestPayment(normalizedId);
+                DemoBookingPaymentRepository.getInstance().getLatestPayment(normalizedId);
 
         synchronized (this) {
             for (int index = 0; index < bookings.size(); index++) {
@@ -220,30 +199,24 @@ public final class DemoBookingRepository {
 
                 if (!current.canConfirmDemo()) {
                     throw new IllegalStateException(
-                            "Chỉ có thể xác nhận yêu cầu demo đã được duyệt."
-                    );
+                            "Chỉ có thể xác nhận yêu cầu demo đã được duyệt.");
                 }
 
                 Long deposit = current.getDepositVnd();
 
                 if (deposit == null) {
                     throw new IllegalStateException(
-                            "Chưa cung cấp tiền cọc. "
-                                    + "Chưa thể xác nhận yêu cầu demo."
-                    );
+                            "Chưa cung cấp tiền cọc. " + "Chưa thể xác nhận yêu cầu demo.");
                 }
 
                 if (deposit > 0) {
                     if (latestPayment == null
                             || !latestPayment.isDemo()
-                            || latestPayment.getStatus()
-                            != BookingPayment.Status.SUCCESS
-                            || latestPayment.getAmountVnd()
-                            != deposit.longValue()) {
+                            || latestPayment.getStatus() != BookingPayment.Status.SUCCESS
+                            || latestPayment.getAmountVnd() != deposit.longValue()) {
                         throw new IllegalStateException(
                                 "Cần thanh toán tiền cọc demo thành công "
-                                        + "và đúng số tiền trước khi xác nhận."
-                        );
+                                        + "và đúng số tiền trước khi xác nhận.");
                     }
                 }
 
@@ -254,25 +227,18 @@ public final class DemoBookingRepository {
             }
         }
 
-        throw new IllegalArgumentException(
-                "Không tìm thấy yêu cầu thuê."
-        );
+        throw new IllegalArgumentException("Không tìm thấy yêu cầu thuê.");
     }
 
     public Booking completeDemoRequest(String bookingId) {
         String normalizedId = requireBookingId(bookingId);
 
         BookingHandover handover =
-                DemoBookingHandoverRepository.getInstance()
-                        .getHandover(normalizedId);
+                DemoBookingHandoverRepository.getInstance().getHandover(normalizedId);
 
-        if (handover == null
-                || !handover.isDemo()
-                || !handover.isCompleted()) {
+        if (handover == null || !handover.isDemo() || !handover.isCompleted()) {
             throw new IllegalStateException(
-                    "Cần cả chủ trọ và người thuê xác nhận "
-                            + "bàn giao demo trước khi hoàn tất."
-            );
+                    "Cần cả chủ trọ và người thuê xác nhận " + "bàn giao demo trước khi hoàn tất.");
         }
 
         synchronized (this) {
@@ -301,119 +267,141 @@ public final class DemoBookingRepository {
             }
         }
 
-        throw new IllegalArgumentException(
-                "Không tìm thấy yêu cầu thuê."
-        );
+        throw new IllegalArgumentException("Không tìm thấy yêu cầu thuê.");
     }
 
     private void requireDemoBooking(Booking booking) {
         if (!booking.isDemo()) {
-            throw new IllegalStateException(
-                    "Chức năng này chỉ áp dụng cho yêu cầu demo."
-            );
+            throw new IllegalStateException("Chức năng này chỉ áp dụng cho yêu cầu demo.");
         }
     }
 
     private void requireHostSession() {
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
-        if (!session.isLoggedIn()
-                || !session.hasRole(UserRole.HOST)) {
+        if (!session.isLoggedIn() || !session.hasRole(UserRole.HOST)) {
             throw new IllegalStateException(
-                    "Chỉ tài khoản Chủ trọ mới được duyệt "
-                            + "hoặc từ chối yêu cầu demo."
-            );
+                    "Chỉ tài khoản Chủ trọ mới được duyệt " + "hoặc từ chối yêu cầu demo.");
         }
     }
 
     private void createDemoBookings() {
         addBooking(
-                "DEMO-001", "demo-room-001",
+                "DEMO-001",
+                "demo-room-001",
                 "Studio đầy đủ tiện nghi",
                 "Cầu Giấy, Hà Nội",
-                3_500_000L, 3_500_000L,
-                10, 2,
+                3_500_000L,
+                3_500_000L,
+                10,
+                2,
                 "Mong muốn vào ở đầu tháng, cần chỗ để xe.",
-                Booking.Status.PENDING, -1
-        );
+                Booking.Status.PENDING,
+                -1);
 
         addBooking(
-                "DEMO-002", "demo-room-002",
+                "DEMO-002",
+                "demo-room-002",
                 "Phòng trọ gần trường",
                 "Hà Đông, Hà Nội",
-                2_800_000L, 0L,
-                7, 1,
+                2_800_000L,
+                0L,
+                7,
+                1,
                 "Mình muốn thuê dài hạn.",
-                Booking.Status.APPROVED, -2
-        );
+                Booking.Status.APPROVED,
+                -2);
 
         addBooking(
-                "DEMO-003", "demo-room-003",
+                "DEMO-003",
+                "demo-room-003",
                 "Căn hộ mini có ban công",
                 "Thanh Xuân, Hà Nội",
-                4_200_000L, 4_200_000L,
-                5, 2, "",
-                Booking.Status.CONFIRMED, -3
-        );
+                4_200_000L,
+                4_200_000L,
+                5,
+                2,
+                "",
+                Booking.Status.CONFIRMED,
+                -3);
 
         addBooking(
-                "DEMO-004", "demo-room-004",
+                "DEMO-004",
+                "demo-room-004",
                 "Phòng trọ khép kín",
                 "Nam Từ Liêm, Hà Nội",
-                3_000_000L, 3_000_000L,
-                -10, 1,
+                3_000_000L,
+                3_000_000L,
+                -10,
+                1,
                 "Đã hoàn tất bàn giao phòng.",
-                Booking.Status.COMPLETED, -20
-        );
+                Booking.Status.COMPLETED,
+                -20);
 
         addBooking(
-                "DEMO-005", "demo-room-005",
+                "DEMO-005",
+                "demo-room-005",
                 "Studio gần trạm xe buýt",
                 "Đống Đa, Hà Nội",
-                3_800_000L, null,
-                8, 1,
+                3_800_000L,
+                null,
+                8,
+                1,
                 "Cần trao đổi thêm về các khoản phí.",
-                Booking.Status.CANCELLED, -4
-        );
+                Booking.Status.CANCELLED,
+                -4);
 
         addBooking(
-                "DEMO-006", "demo-room-006",
+                "DEMO-006",
+                "demo-room-006",
                 "Phòng trọ có gác",
                 "Hoàng Mai, Hà Nội",
-                2_500_000L, 2_500_000L,
-                12, 2, "",
-                Booking.Status.REJECTED, -5
-        );
+                2_500_000L,
+                2_500_000L,
+                12,
+                2,
+                "",
+                Booking.Status.REJECTED,
+                -5);
 
         addBooking(
-                "DEMO-007", "demo-room-007",
+                "DEMO-007",
+                "demo-room-007",
                 "Căn hộ mini gần trường",
                 "Hà Đông, Hà Nội",
-                3_200_000L, 3_200_000L,
-                6, 1, "",
-                Booking.Status.EXPIRED, -7
-        );
+                3_200_000L,
+                3_200_000L,
+                6,
+                1,
+                "",
+                Booking.Status.EXPIRED,
+                -7);
 
         addBooking(
-                "DEMO-008", "demo-room-008",
+                "DEMO-008",
+                "demo-room-008",
                 "Studio thử thanh toán tiền cọc",
                 "Cầu Giấy, Hà Nội",
-                3_600_000L, 3_600_000L,
-                9, 2,
+                3_600_000L,
+                3_600_000L,
+                9,
+                2,
                 "Mẫu kiểm tra thanh toán demo có tiền cọc.",
-                Booking.Status.APPROVED, -1
-        );
+                Booking.Status.APPROVED,
+                -1);
 
         addBooking(
-                "DEMO-009", "demo-room-009",
+                "DEMO-009",
+                "demo-room-009",
                 "Phòng thử trường hợp chưa cung cấp cọc",
                 "Thanh Xuân, Hà Nội",
-                3_100_000L, null,
-                11, 1,
+                3_100_000L,
+                null,
+                11,
+                1,
                 "Mẫu kiểm tra giao diện khi chưa có thông tin tiền cọc.",
-                Booking.Status.APPROVED, -2
-        );
+                Booking.Status.APPROVED,
+                -2);
     }
 
     private void addBooking(
@@ -427,8 +415,7 @@ public final class DemoBookingRepository {
             int occupantCount,
             String note,
             Booking.Status status,
-            int createdDaysFromToday
-    ) {
+            int createdDaysFromToday) {
         bookings.add(
                 new Booking(
                         id,
@@ -442,16 +429,12 @@ public final class DemoBookingRepository {
                         note,
                         status,
                         dateFromToday(createdDaysFromToday),
-                        true
-                )
-        );
+                        true));
     }
 
     private static String requireBookingId(String bookingId) {
         if (bookingId == null || bookingId.trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Mã yêu cầu không được để trống."
-            );
+            throw new IllegalArgumentException("Mã yêu cầu không được để trống.");
         }
 
         return bookingId.trim();

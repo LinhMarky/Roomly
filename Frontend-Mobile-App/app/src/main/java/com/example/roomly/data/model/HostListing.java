@@ -16,7 +16,11 @@ public final class HostListing {
         ARCHIVED;
 
         public boolean canEdit() {
-            return this == DRAFT || this == REJECTED || this == HIDDEN || this == EXPIRED || this == PUBLISHED;
+            return this == DRAFT
+                    || this == REJECTED
+                    || this == HIDDEN
+                    || this == EXPIRED
+                    || this == PUBLISHED;
         }
 
         public boolean canSubmit() {

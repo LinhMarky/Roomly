@@ -17,7 +17,7 @@ import com.example.roomly.util.ImageLoader;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Hiển thị ảnh drawable hoặc ảnh URI trên thiết bị. Chưa tải ảnh từ backend. */
+/** Hiển thị ảnh drawable, ảnh URI trên thiết bị hoặc ảnh từ máy chủ. */
 public class RoomImageAdapter extends RecyclerView.Adapter<RoomImageAdapter.ImageViewHolder> {
 
     private final List<RoomImage> images = new ArrayList<>();

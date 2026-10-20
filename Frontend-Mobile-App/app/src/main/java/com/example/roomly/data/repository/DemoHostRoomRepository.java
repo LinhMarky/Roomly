@@ -19,8 +19,7 @@ import java.util.UUID;
  */
 public class DemoHostRoomRepository {
 
-    private static final DemoHostRoomRepository INSTANCE =
-            new DemoHostRoomRepository();
+    private static final DemoHostRoomRepository INSTANCE = new DemoHostRoomRepository();
 
     private static final BigDecimal MIN_AREA = new BigDecimal("2");
     private static final BigDecimal MAX_AREA = new BigDecimal("1000");
@@ -30,8 +29,7 @@ public class DemoHostRoomRepository {
     /**
      * Chỉ cho phép sử dụng repository dùng chung.
      */
-    private DemoHostRoomRepository() {
-    }
+    private DemoHostRoomRepository() {}
 
     /**
      * Trả về repository dùng chung trong ứng dụng.
@@ -47,11 +45,9 @@ public class DemoHostRoomRepository {
     public List<HostRoom> getMyRooms() {
         List<HostRoom> result = new ArrayList<>();
 
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
-        if (!session.isLoggedIn()
-                || !session.hasRole(UserRole.HOST)) {
+        if (!session.isLoggedIn() || !session.hasRole(UserRole.HOST)) {
             return result;
         }
 
@@ -69,20 +65,8 @@ public class DemoHostRoomRepository {
      */
     @MainThread
     public HostRoom createRoom(
-            String unitCode,
-            String name,
-            String address,
-            BigDecimal area,
-            String description
-    ) {
-        return createRoom(
-                unitCode,
-                name,
-                address,
-                area,
-                description,
-                null
-        );
+            String unitCode, String name, String address, BigDecimal area, String description) {
+        return createRoom(unitCode, name, address, area, description, null);
     }
 
     /**
@@ -96,8 +80,7 @@ public class DemoHostRoomRepository {
             String address,
             BigDecimal area,
             String description,
-            String imageUri
-    ) {
+            String imageUri) {
         return createRoomInternal(
                 unitCode,
                 name,
@@ -108,8 +91,7 @@ public class DemoHostRoomRepository {
                 RoomType.ROOM,
                 0,
                 Collections.emptyList(),
-                false
-        );
+                false);
     }
 
     /**
@@ -126,8 +108,7 @@ public class DemoHostRoomRepository {
             String imageUri,
             RoomType roomType,
             int maxOccupants,
-            List<String> amenities
-    ) {
+            List<String> amenities) {
         return createRoomInternal(
                 unitCode,
                 name,
@@ -138,8 +119,7 @@ public class DemoHostRoomRepository {
                 roomType,
                 maxOccupants,
                 amenities,
-                true
-        );
+                true);
     }
 
     /**
@@ -155,8 +135,7 @@ public class DemoHostRoomRepository {
             RoomType roomType,
             int maxOccupants,
             List<String> amenities,
-            boolean requireOccupants
-    ) {
+            boolean requireOccupants) {
         SessionState session = requireHostSession();
 
         String cleanCode = cleanText(unitCode);
@@ -168,32 +147,25 @@ public class DemoHostRoomRepository {
 
         List<String> cleanAmenities = cleanAmenities(amenities);
 
-        validateRoomOptions(
-                roomType,
-                maxOccupants,
-                cleanAmenities,
-                requireOccupants
-        );
+        validateRoomOptions(roomType, maxOccupants, cleanAmenities, requireOccupants);
 
         if (hasDuplicateCode(session.getUserId(), cleanCode)) {
-            throw new IllegalArgumentException(
-                    "Bạn đã có phòng sử dụng mã này."
-            );
+            throw new IllegalArgumentException("Bạn đã có phòng sử dụng mã này.");
         }
 
-        HostRoom room = new HostRoom(
-                UUID.randomUUID().toString(),
-                session.getUserId(),
-                cleanCode,
-                cleanName,
-                cleanAddress,
-                area,
-                cleanText(description),
-                cleanImageUri(imageUri),
-                roomType,
-                maxOccupants,
-                cleanAmenities
-        );
+        HostRoom room =
+                new HostRoom(
+                        UUID.randomUUID().toString(),
+                        session.getUserId(),
+                        cleanCode,
+                        cleanName,
+                        cleanAddress,
+                        area,
+                        cleanText(description),
+                        cleanImageUri(imageUri),
+                        roomType,
+                        maxOccupants,
+                        cleanAmenities);
 
         rooms.add(room);
 
@@ -209,17 +181,14 @@ public class DemoHostRoomRepository {
             return null;
         }
 
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
-        if (!session.isLoggedIn()
-                || !session.hasRole(UserRole.HOST)) {
+        if (!session.isLoggedIn() || !session.hasRole(UserRole.HOST)) {
             return null;
         }
 
         for (HostRoom room : rooms) {
-            if (roomId.equals(room.getId())
-                    && session.getUserId().equals(room.getOwnerId())) {
+            if (roomId.equals(room.getId()) && session.getUserId().equals(room.getOwnerId())) {
                 return room;
             }
         }
@@ -238,8 +207,7 @@ public class DemoHostRoomRepository {
             String address,
             BigDecimal area,
             String description,
-            String imageUri
-    ) {
+            String imageUri) {
         requireHostSession();
 
         HostRoom currentRoom = requireMyRoom(roomId);
@@ -254,8 +222,7 @@ public class DemoHostRoomRepository {
                 currentRoom.getRoomType(),
                 currentRoom.getMaxOccupants(),
                 currentRoom.getAmenities(),
-                false
-        );
+                false);
     }
 
     /**
@@ -272,8 +239,7 @@ public class DemoHostRoomRepository {
             String imageUri,
             RoomType roomType,
             int maxOccupants,
-            List<String> amenities
-    ) {
+            List<String> amenities) {
         requireHostSession();
 
         HostRoom currentRoom = requireMyRoom(roomId);
@@ -288,8 +254,7 @@ public class DemoHostRoomRepository {
                 roomType,
                 maxOccupants,
                 amenities,
-                true
-        );
+                true);
     }
 
     /**
@@ -305,8 +270,7 @@ public class DemoHostRoomRepository {
             RoomType roomType,
             int maxOccupants,
             List<String> amenities,
-            boolean requireOccupants
-    ) {
+            boolean requireOccupants) {
         String cleanName = cleanText(name);
         String cleanAddress = cleanText(address);
         String cleanDescription = cleanText(description);
@@ -316,30 +280,17 @@ public class DemoHostRoomRepository {
 
         List<String> cleanedAmenities = cleanAmenities(amenities);
 
-        validateRoomOptions(
-                roomType,
-                maxOccupants,
-                cleanedAmenities,
-                requireOccupants
-        );
+        validateRoomOptions(roomType, maxOccupants, cleanedAmenities, requireOccupants);
 
-        boolean sameArea = currentRoom.getArea() != null
-                && currentRoom.getArea().compareTo(area) == 0;
+        boolean sameArea =
+                currentRoom.getArea() != null && currentRoom.getArea().compareTo(area) == 0;
 
         boolean changed =
-                !java.util.Objects.equals(
-                        currentRoom.getName(), cleanName
-                )
-                        || !java.util.Objects.equals(
-                        currentRoom.getAddress(), cleanAddress
-                )
+                !java.util.Objects.equals(currentRoom.getName(), cleanName)
+                        || !java.util.Objects.equals(currentRoom.getAddress(), cleanAddress)
                         || !sameArea
-                        || !java.util.Objects.equals(
-                        currentRoom.getDescription(), cleanDescription
-                )
-                        || !java.util.Objects.equals(
-                        currentRoom.getImageUri(), cleanedImageUri
-                )
+                        || !java.util.Objects.equals(currentRoom.getDescription(), cleanDescription)
+                        || !java.util.Objects.equals(currentRoom.getImageUri(), cleanedImageUri)
                         || currentRoom.getRoomType() != roomType
                         || currentRoom.getMaxOccupants() != maxOccupants
                         || !currentRoom.getAmenities().equals(cleanedAmenities);
@@ -349,28 +300,26 @@ public class DemoHostRoomRepository {
             return currentRoom;
         }
 
-        if (DemoBookingRepository.getInstance()
-                .hasActiveBookingForRoom(currentRoom.getId())) {
+        if (DemoBookingRepository.getInstance().hasActiveBookingForRoom(currentRoom.getId())) {
             throw new IllegalStateException(
                     "Không thể chỉnh sửa thông tin phòng khi có yêu cầu thuê "
-                            + "đã được duyệt hoặc xác nhận."
-            );
+                            + "đã được duyệt hoặc xác nhận.");
         }
 
-        HostRoom updatedRoom = new HostRoom(
-                currentRoom.getId(),
-                currentRoom.getOwnerId(),
-                currentRoom.getUnitCode(),
-                cleanName,
-                cleanAddress,
-                area,
-                cleanDescription,
-                cleanedImageUri,
-                roomType,
-                maxOccupants,
-                cleanedAmenities,
-                currentRoom.getAvailability()
-        );
+        HostRoom updatedRoom =
+                new HostRoom(
+                        currentRoom.getId(),
+                        currentRoom.getOwnerId(),
+                        currentRoom.getUnitCode(),
+                        cleanName,
+                        cleanAddress,
+                        area,
+                        cleanDescription,
+                        cleanedImageUri,
+                        roomType,
+                        maxOccupants,
+                        cleanedAmenities,
+                        currentRoom.getAvailability());
 
         for (int index = 0; index < rooms.size(); index++) {
             if (rooms.get(index).getId().equals(currentRoom.getId())) {
@@ -383,34 +332,25 @@ public class DemoHostRoomRepository {
             }
         }
 
-        throw new IllegalStateException(
-                "Phòng không còn trong dữ liệu mẫu."
-        );
+        throw new IllegalStateException("Phòng không còn trong dữ liệu mẫu.");
     }
 
     /**
      * Yêu cầu phiên đăng nhập có quyền chủ trọ và email đã xác minh.
      */
     private SessionState requireHostSession() {
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (!session.isLoggedIn()) {
-            throw new IllegalStateException(
-                    "Bạn cần đăng nhập để quản lý phòng."
-            );
+            throw new IllegalStateException("Bạn cần đăng nhập để quản lý phòng.");
         }
 
         if (!session.hasRole(UserRole.HOST)) {
-            throw new IllegalStateException(
-                    "Tài khoản chưa có quyền chủ trọ."
-            );
+            throw new IllegalStateException("Tài khoản chưa có quyền chủ trọ.");
         }
 
         if (!session.isEmailVerified()) {
-            throw new IllegalStateException(
-                    "Bạn cần xác minh email để quản lý phòng."
-            );
+            throw new IllegalStateException("Bạn cần xác minh email để quản lý phòng.");
         }
 
         return session;
@@ -423,9 +363,7 @@ public class DemoHostRoomRepository {
         HostRoom room = getMyRoomById(roomId);
 
         if (room == null) {
-            throw new IllegalStateException(
-                    "Không tìm thấy phòng thuộc tài khoản của bạn."
-            );
+            throw new IllegalStateException("Không tìm thấy phòng thuộc tài khoản của bạn.");
         }
 
         return room;
@@ -437,39 +375,26 @@ public class DemoHostRoomRepository {
     private void validateUnitCode(String unitCode) {
         if (!unitCode.matches("[A-Z0-9_-]{1,30}")) {
             throw new IllegalArgumentException(
-                    "Mã phòng gồm 1–30 ký tự: chữ hoa, số, dấu _ hoặc -."
-            );
+                    "Mã phòng gồm 1–30 ký tự: chữ hoa, số, dấu _ hoặc -.");
         }
     }
 
     /**
      * Kiểm tra tên, địa chỉ và diện tích phòng.
      */
-    private void validateRoomInformation(
-            String name,
-            String address,
-            BigDecimal area
-    ) {
+    private void validateRoomInformation(String name, String address, BigDecimal area) {
         if (name.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Vui lòng nhập tên phòng."
-            );
+            throw new IllegalArgumentException("Vui lòng nhập tên phòng.");
         }
 
         int addressLength = address.codePointCount(0, address.length());
 
         if (addressLength < 5 || addressLength > 300) {
-            throw new IllegalArgumentException(
-                    "Địa chỉ phải có từ 5 đến 300 ký tự."
-            );
+            throw new IllegalArgumentException("Địa chỉ phải có từ 5 đến 300 ký tự.");
         }
 
-        if (area == null
-                || area.compareTo(MIN_AREA) < 0
-                || area.compareTo(MAX_AREA) > 0) {
-            throw new IllegalArgumentException(
-                    "Diện tích phải từ 2 đến 1.000 m²."
-            );
+        if (area == null || area.compareTo(MIN_AREA) < 0 || area.compareTo(MAX_AREA) > 0) {
+            throw new IllegalArgumentException("Diện tích phải từ 2 đến 1.000 m².");
         }
     }
 
@@ -478,39 +403,26 @@ public class DemoHostRoomRepository {
      * Cho phép giá trị sức chứa 0 khi giữ tương thích dữ liệu cũ.
      */
     private void validateRoomOptions(
-            RoomType roomType,
-            int maxOccupants,
-            List<String> amenities,
-            boolean requireOccupants
-    ) {
+            RoomType roomType, int maxOccupants, List<String> amenities, boolean requireOccupants) {
         if (roomType == null) {
-            throw new IllegalArgumentException(
-                    "Vui lòng chọn loại phòng."
-            );
+            throw new IllegalArgumentException("Vui lòng chọn loại phòng.");
         }
 
         int minimum = requireOccupants ? 1 : 0;
 
         if (maxOccupants < minimum || maxOccupants > 10) {
-            throw new IllegalArgumentException(
-                    "Số người tối đa phải từ 1 đến 10."
-            );
+            throw new IllegalArgumentException("Số người tối đa phải từ 1 đến 10.");
         }
 
         if (amenities.size() > 30) {
-            throw new IllegalArgumentException(
-                    "Chỉ được chọn tối đa 30 tiện ích."
-            );
+            throw new IllegalArgumentException("Chỉ được chọn tối đa 30 tiện ích.");
         }
     }
 
     /**
      * Kiểm tra mã phòng trùng trong các phòng của cùng chủ trọ.
      */
-    private boolean hasDuplicateCode(
-            String ownerId,
-            String unitCode
-    ) {
+    private boolean hasDuplicateCode(String ownerId, String unitCode) {
         for (HostRoom room : rooms) {
             if (ownerId.equals(room.getOwnerId())
                     && unitCode.equalsIgnoreCase(room.getUnitCode())) {
@@ -525,9 +437,7 @@ public class DemoHostRoomRepository {
     public void markCompletedRoomAsRented(String roomId) {
         // Chỉ cập nhật khi đã có booking hoàn tất của đúng phòng.
         if (!DemoBookingRepository.getInstance().isRoomRented(roomId)) {
-            throw new IllegalStateException(
-                    "Phòng chưa có yêu cầu thuê hoàn tất."
-            );
+            throw new IllegalStateException("Phòng chưa có yêu cầu thuê hoàn tất.");
         }
 
         for (int index = 0; index < rooms.size(); index++) {
@@ -542,20 +452,20 @@ public class DemoHostRoomRepository {
                 return;
             }
 
-            HostRoom rentedRoom = new HostRoom(
-                    room.getId(),
-                    room.getOwnerId(),
-                    room.getUnitCode(),
-                    room.getName(),
-                    room.getAddress(),
-                    room.getArea(),
-                    room.getDescription(),
-                    room.getImageUri(),
-                    room.getRoomType(),
-                    room.getMaxOccupants(),
-                    room.getAmenities(),
-                    com.example.roomly.data.model.RoomCard.Availability.RENTED
-            );
+            HostRoom rentedRoom =
+                    new HostRoom(
+                            room.getId(),
+                            room.getOwnerId(),
+                            room.getUnitCode(),
+                            room.getName(),
+                            room.getAddress(),
+                            room.getArea(),
+                            room.getDescription(),
+                            room.getImageUri(),
+                            room.getRoomType(),
+                            room.getMaxOccupants(),
+                            room.getAmenities(),
+                            com.example.roomly.data.model.RoomCard.Availability.RENTED);
 
             rooms.set(index, rentedRoom);
             return;

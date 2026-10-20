@@ -56,11 +56,16 @@ public class LoginFragment extends Fragment {
                         getViewLifecycleOwner(),
                         session -> {
                             if (session.isLoggedIn()) {
-                                com.example.roomly.ui.NavigationHelper.whenResumed(this, () -> {
-                                    if (navigated || !SessionRepository.getInstance().getCurrentSession().isLoggedIn()) return;
-                                    navigated = true;
-                                    getParentFragmentManager().popBackStack();
-                                });
+                                com.example.roomly.ui.NavigationHelper.whenResumed(
+                                        this,
+                                        () -> {
+                                            if (navigated
+                                                    || !SessionRepository.getInstance()
+                                                            .getCurrentSession()
+                                                            .isLoggedIn()) return;
+                                            navigated = true;
+                                            getParentFragmentManager().popBackStack();
+                                        });
                             }
                         });
 

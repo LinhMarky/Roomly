@@ -3,6 +3,7 @@ package com.example.roomly.ui.auth;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModel;
+
 import com.example.roomly.data.repository.AuthRepository;
 
 /** Giữ kết quả gửi mã/xác nhận qua vòng đời; không giữ View, mật khẩu hoặc mã OTP. */
@@ -25,23 +26,45 @@ public class AuthChallengeViewModel extends ViewModel {
         }
     }
 
-    public LiveData<String> phase() { return state.getLiveData("phase", IDLE); }
-    public String currentPhase() { return state.get("phase") == null ? IDLE : state.get("phase"); }
-    public String message() { return message; }
-    public boolean isBusy() { return SENDING.equals(currentPhase()) || SUBMITTING.equals(currentPhase()); }
-    public boolean hasRequestedCode() { return Boolean.TRUE.equals(state.get("code_requested")); }
-    public String email() { String email = state.get("email"); return email == null ? "" : email; }
+    public LiveData<String> phase() {
+        return state.getLiveData("phase", IDLE);
+    }
+
+    public String currentPhase() {
+        return state.get("phase") == null ? IDLE : state.get("phase");
+    }
+
+    public String message() {
+        return message;
+    }
+
+    public boolean isBusy() {
+        return SENDING.equals(currentPhase()) || SUBMITTING.equals(currentPhase());
+    }
+
+    public boolean hasRequestedCode() {
+        return Boolean.TRUE.equals(state.get("code_requested"));
+    }
+
+    public String email() {
+        String email = state.get("email");
+        return email == null ? "" : email;
+    }
 
     public void requestCode(String email, boolean recovery) {
         if (isBusy() || COMPLETE.equals(currentPhase())) return;
         state.set("email", email);
         message = "";
         state.set("phase", SENDING);
-        repository.requestCode(email, recovery, () -> {
-            state.set("code_requested", true);
-            message = "Hãy kiểm tra hộp thư của bạn.";
-            state.set("phase", CODE_SENT);
-        }, this::failed);
+        repository.requestCode(
+                email,
+                recovery,
+                () -> {
+                    state.set("code_requested", true);
+                    message = "Hãy kiểm tra hộp thư của bạn.";
+                    state.set("phase", CODE_SENT);
+                },
+                this::failed);
     }
 
     public void verify(String email, String code) {
@@ -59,8 +82,14 @@ public class AuthChallengeViewModel extends ViewModel {
         repository.resetPassword(email(), code, password, this::completed, this::failed);
     }
 
-    private void completed() { state.set("phase", COMPLETE); }
-    private void failed(String error) { message = error; state.set("phase", ERROR); }
+    private void completed() {
+        state.set("phase", COMPLETE);
+    }
+
+    private void failed(String error) {
+        message = error;
+        state.set("phase", ERROR);
+    }
 
     public boolean consumeCompletion() {
         if (!COMPLETE.equals(currentPhase())) return false;

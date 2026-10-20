@@ -25,12 +25,10 @@ public final class DemoHostAppointmentRepository {
     private static final DemoHostAppointmentRepository INSTANCE =
             new DemoHostAppointmentRepository();
 
-    private final List<HostViewingAppointment> demoAppointments =
-            new ArrayList<>();
+    private final List<HostViewingAppointment> demoAppointments = new ArrayList<>();
 
     /** Khởi tạo danh sách yêu cầu debug trống. */
-    private DemoHostAppointmentRepository() {
-    }
+    private DemoHostAppointmentRepository() {}
 
     /** Trả về repository dùng chung. */
     public static DemoHostAppointmentRepository getInstance() {
@@ -42,38 +40,28 @@ public final class DemoHostAppointmentRepository {
     public List<HostViewingAppointment> getMyAppointments() {
         List<HostViewingAppointment> results = new ArrayList<>();
 
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
-        if (!session.isLoggedIn()
-                || !session.hasRole(UserRole.HOST)) {
+        if (!session.isLoggedIn() || !session.hasRole(UserRole.HOST)) {
             return results;
         }
 
-        results.addAll(
-                DemoAppointmentRepository.getInstance()
-                        .getMyHostAppointments()
-        );
+        results.addAll(DemoAppointmentRepository.getInstance().getMyHostAppointments());
 
         for (HostViewingAppointment appointment : demoAppointments) {
             if (!session.getUserId().equals(appointment.getOwnerId())) {
                 continue;
             }
 
-            HostRoom room = DemoHostRoomRepository.getInstance()
-                    .getMyRoomById(appointment.getRoomId());
+            HostRoom room =
+                    DemoHostRoomRepository.getInstance().getMyRoomById(appointment.getRoomId());
 
-            if (room != null
-                    && room.getOwnerId().equals(appointment.getOwnerId())) {
+            if (room != null && room.getOwnerId().equals(appointment.getOwnerId())) {
                 results.add(appointment);
             }
         }
 
-        results.sort(
-                Comparator.comparingLong(
-                        HostViewingAppointment::getStartTimeMillis
-                )
-        );
+        results.sort(Comparator.comparingLong(HostViewingAppointment::getStartTimeMillis));
 
         return results;
     }
@@ -81,9 +69,7 @@ public final class DemoHostAppointmentRepository {
     /** Tìm yêu cầu thuộc đúng chủ trọ hiện tại. */
     @Nullable
     @MainThread
-    public HostViewingAppointment getMyAppointmentById(
-            @Nullable String appointmentId
-    ) {
+    public HostViewingAppointment getMyAppointmentById(@Nullable String appointmentId) {
         if (appointmentId == null) {
             return null;
         }
@@ -105,10 +91,7 @@ public final class DemoHostAppointmentRepository {
 
     /** Từ chối yêu cầu đang chờ với lý do bắt buộc. */
     @MainThread
-    public HostViewingAppointment rejectAppointment(
-            String id,
-            String reason
-    ) {
+    public HostViewingAppointment rejectAppointment(String id, String reason) {
         return applyDecision(id, false, reason);
     }
 
@@ -116,59 +99,43 @@ public final class DemoHostAppointmentRepository {
      * Chuyển yêu cầu người thuê sang repository chung để cập nhật.
      * Với yêu cầu debug riêng, cập nhật danh sách debug.
      */
-    private HostViewingAppointment applyDecision(
-            String id,
-            boolean confirmed,
-            String reason
-    ) {
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+    private HostViewingAppointment applyDecision(String id, boolean confirmed, String reason) {
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (!session.isLoggedIn()
                 || !session.hasRole(UserRole.HOST)
                 || !session.isEmailVerified()) {
-            throw new IllegalStateException(
-                    "Bạn cần quyền chủ trọ và email đã xác minh."
-            );
+            throw new IllegalStateException("Bạn cần quyền chủ trọ và email đã xác minh.");
         }
 
         HostViewingAppointment current = getMyAppointmentById(id);
 
         if (current == null) {
-            throw new IllegalStateException(
-                    "Không tìm thấy yêu cầu thuộc phòng của bạn."
-            );
+            throw new IllegalStateException("Không tìm thấy yêu cầu thuộc phòng của bạn.");
         }
 
-        if (current.getStatus()
-                != HostViewingAppointment.Status.PENDING) {
-            throw new IllegalStateException(
-                    "Yêu cầu đã được xử lý hoặc đã hủy."
-            );
+        if (current.getStatus() != HostViewingAppointment.Status.PENDING) {
+            throw new IllegalStateException("Yêu cầu đã được xử lý hoặc đã hủy.");
         }
 
         if (current.getStartTimeMillis() <= System.currentTimeMillis()) {
-            throw new IllegalStateException(
-                    "Lịch đã bắt đầu hoặc đã qua."
-            );
+            throw new IllegalStateException("Lịch đã bắt đầu hoặc đã qua.");
         }
 
         String cleanReason = reason == null ? "" : reason.trim();
 
         if (!confirmed && cleanReason.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Bạn cần nhập lý do từ chối."
-            );
+            throw new IllegalArgumentException("Bạn cần nhập lý do từ chối.");
         }
 
         for (int index = 0; index < demoAppointments.size(); index++) {
             if (demoAppointments.get(index).getId().equals(id)) {
-                HostViewingAppointment updated = current.withDecision(
-                        confirmed
-                                ? HostViewingAppointment.Status.CONFIRMED
-                                : HostViewingAppointment.Status.REJECTED,
-                        confirmed ? "" : cleanReason
-                );
+                HostViewingAppointment updated =
+                        current.withDecision(
+                                confirmed
+                                        ? HostViewingAppointment.Status.CONFIRMED
+                                        : HostViewingAppointment.Status.REJECTED,
+                                confirmed ? "" : cleanReason);
 
                 demoAppointments.set(index, updated);
                 return updated;
@@ -183,39 +150,28 @@ public final class DemoHostAppointmentRepository {
     @MainThread
     public HostViewingAppointment createDemoRequest(String roomId) {
         if (!BuildConfig.DEBUG) {
-            throw new IllegalStateException(
-                    "Chỉ được tạo yêu cầu thử trong bản debug."
-            );
+            throw new IllegalStateException("Chỉ được tạo yêu cầu thử trong bản debug.");
         }
 
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (!session.isLoggedIn()
                 || !session.hasRole(UserRole.HOST)
                 || !session.isEmailVerified()) {
-            throw new IllegalStateException(
-                    "Bạn cần quyền chủ trọ và email đã xác minh."
-            );
+            throw new IllegalStateException("Bạn cần quyền chủ trọ và email đã xác minh.");
         }
 
-        HostRoom room = DemoHostRoomRepository.getInstance()
-                .getMyRoomById(roomId);
+        HostRoom room = DemoHostRoomRepository.getInstance().getMyRoomById(roomId);
 
         if (room == null) {
-            throw new IllegalStateException(
-                    "Không tìm thấy phòng thuộc tài khoản của bạn."
-            );
+            throw new IllegalStateException("Không tìm thấy phòng thuộc tài khoản của bạn.");
         }
 
         HostViewingSlot selected = null;
 
-        for (HostViewingSlot slot :
-                DemoHostViewingRepository.getInstance()
-                        .getMySlots(roomId)) {
+        for (HostViewingSlot slot : DemoHostViewingRepository.getInstance().getMySlots(roomId)) {
             if (slot.isOpen()
-                    && slot.getStartTimeMillis()
-                    > System.currentTimeMillis()
+                    && slot.getStartTimeMillis() > System.currentTimeMillis()
                     && !hasDemoRequestForSlot(slot)) {
                 selected = slot;
                 break;
@@ -224,9 +180,7 @@ public final class DemoHostAppointmentRepository {
 
         if (selected == null) {
             throw new IllegalStateException(
-                    "Hãy tạo khung giờ mở trong tương lai "
-                            + "chưa có yêu cầu thử."
-            );
+                    "Hãy tạo khung giờ mở trong tương lai " + "chưa có yêu cầu thử.");
         }
 
         HostViewingAppointment appointment =
@@ -240,11 +194,9 @@ public final class DemoHostAppointmentRepository {
                         "Người xem phòng mẫu",
                         selected.getStartTimeMillis(),
                         selected.getEndTimeMillis(),
-                        "Yêu cầu tạo bằng nút thử giao diện, "
-                                + "không phải người thuê gửi.",
+                        "Yêu cầu tạo bằng nút thử giao diện, " + "không phải người thuê gửi.",
                         HostViewingAppointment.Status.PENDING,
-                        ""
-                );
+                        "");
 
         demoAppointments.add(appointment);
         return appointment;
@@ -255,10 +207,8 @@ public final class DemoHostAppointmentRepository {
         for (HostViewingAppointment appointment : demoAppointments) {
             if (appointment.getOwnerId().equals(slot.getOwnerId())
                     && appointment.getRoomId().equals(slot.getRoomId())
-                    && appointment.getStartTimeMillis()
-                    == slot.getStartTimeMillis()
-                    && appointment.getEndTimeMillis()
-                    == slot.getEndTimeMillis()) {
+                    && appointment.getStartTimeMillis() == slot.getStartTimeMillis()
+                    && appointment.getEndTimeMillis() == slot.getEndTimeMillis()) {
                 return true;
             }
         }

@@ -15,8 +15,8 @@ import com.example.roomly.databinding.ItemNotificationBinding;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class NotificationAdapter extends
-        RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
+public final class NotificationAdapter
+        extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
 
     public interface OnNotificationClickListener {
         void onNotificationClick(AppNotification notification);
@@ -41,24 +41,16 @@ public final class NotificationAdapter extends
 
     @NonNull
     @Override
-    public NotificationViewHolder onCreateViewHolder(
-            @NonNull ViewGroup parent,
-            int viewType
-    ) {
-        ItemNotificationBinding binding = ItemNotificationBinding.inflate(
-                LayoutInflater.from(parent.getContext()),
-                parent,
-                false
-        );
+    public NotificationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        ItemNotificationBinding binding =
+                ItemNotificationBinding.inflate(
+                        LayoutInflater.from(parent.getContext()), parent, false);
 
         return new NotificationViewHolder(binding);
     }
 
     @Override
-    public void onBindViewHolder(
-            @NonNull NotificationViewHolder holder,
-            int position
-    ) {
+    public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
         holder.bind(notifications.get(position));
     }
 
@@ -75,59 +67,40 @@ public final class NotificationAdapter extends
             super(binding.getRoot());
             this.binding = binding;
 
-            binding.getRoot().setOnClickListener(view -> {
-                int position = getBindingAdapterPosition();
+            binding.getRoot()
+                    .setOnClickListener(
+                            view -> {
+                                int position = getBindingAdapterPosition();
 
-                if (position == RecyclerView.NO_POSITION || listener == null) {
-                    return;
-                }
+                                if (position == RecyclerView.NO_POSITION || listener == null) {
+                                    return;
+                                }
 
-                listener.onNotificationClick(
-                        notifications.get(position)
-                );
-            });
+                                listener.onNotificationClick(notifications.get(position));
+                            });
         }
 
         void bind(AppNotification notification) {
-            binding.tvNotificationTitle.setText(
-                    notification.getTitle()
-            );
+            binding.tvNotificationTitle.setText(notification.getTitle());
 
-            binding.tvNotificationBody.setText(
-                    notification.getBody()
-            );
+            binding.tvNotificationBody.setText(notification.getBody());
 
             binding.tvNotificationBody.setVisibility(
-                    notification.getBody().isEmpty()
-                            ? View.GONE
-                            : View.VISIBLE
-            );
+                    notification.getBody().isEmpty() ? View.GONE : View.VISIBLE);
 
-            binding.tvNotificationTime.setText(
-                    notification.getTimeLabel()
-            );
+            binding.tvNotificationTime.setText(notification.getTimeLabel());
 
-            binding.tvNotificationReadStatus.setText(
-                    notification.getReadStatusLabel()
-            );
+            binding.tvNotificationReadStatus.setText(notification.getReadStatusLabel());
 
             // INVISIBLE giữ vị trí tiêu đề thẳng hàng giữa các thẻ.
             binding.indicatorNotificationUnread.setVisibility(
-                    notification.isRead()
-                            ? View.INVISIBLE
-                            : View.VISIBLE
-            );
+                    notification.isRead() ? View.INVISIBLE : View.VISIBLE);
 
-            int statusColor = notification.isRead()
-                    ? R.color.roomly_text_secondary
-                    : R.color.roomly_primary;
+            int statusColor =
+                    notification.isRead() ? R.color.roomly_text_secondary : R.color.roomly_primary;
 
             binding.tvNotificationReadStatus.setTextColor(
-                    ContextCompat.getColor(
-                            binding.getRoot().getContext(),
-                            statusColor
-                    )
-            );
+                    ContextCompat.getColor(binding.getRoot().getContext(), statusColor));
         }
     }
 }

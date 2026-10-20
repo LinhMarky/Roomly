@@ -21,34 +21,23 @@ public final class BookingReview {
             int rating,
             String comment,
             long createdAtMillis,
-            boolean demo
-    ) {
+            boolean demo) {
         this.id = requireText(id, "Mã đánh giá");
         this.bookingId = requireText(bookingId, "Mã yêu cầu thuê");
         this.reviewerId = requireText(reviewerId, "Mã người đánh giá");
 
         if (rating < 1 || rating > 5) {
-            throw new IllegalArgumentException(
-                    "Vui lòng chọn từ 1 đến 5 sao."
-            );
+            throw new IllegalArgumentException("Vui lòng chọn từ 1 đến 5 sao.");
         }
 
-        String normalizedComment = comment == null
-                ? ""
-                : comment.trim();
+        String normalizedComment = comment == null ? "" : comment.trim();
 
-        if (normalizedComment.codePointCount(
-                0, normalizedComment.length()
-        ) > 2000) {
-            throw new IllegalArgumentException(
-                    "Nhận xét tối đa 2.000 ký tự."
-            );
+        if (normalizedComment.codePointCount(0, normalizedComment.length()) > 2000) {
+            throw new IllegalArgumentException("Nhận xét tối đa 2.000 ký tự.");
         }
 
         if (createdAtMillis <= 0) {
-            throw new IllegalArgumentException(
-                    "Thời gian đánh giá không hợp lệ."
-            );
+            throw new IllegalArgumentException("Thời gian đánh giá không hợp lệ.");
         }
 
         this.rating = rating;
@@ -108,24 +97,17 @@ public final class BookingReview {
     }
 
     public String getCreatedAtLabel() {
-        SimpleDateFormat formatter = new SimpleDateFormat(
-                "dd/MM/yyyy HH:mm",
-                new Locale("vi", "VN")
-        );
+        SimpleDateFormat formatter =
+                new SimpleDateFormat("dd/MM/yyyy HH:mm", new Locale("vi", "VN"));
 
         return formatter.format(new Date(createdAtMillis));
     }
 
-    private static String requireText(
-            String value,
-            String fieldName
-    ) {
+    private static String requireText(String value, String fieldName) {
         String normalized = value == null ? "" : value.trim();
 
         if (normalized.isEmpty()) {
-            throw new IllegalArgumentException(
-                    fieldName + " không được để trống."
-            );
+            throw new IllegalArgumentException(fieldName + " không được để trống.");
         }
 
         return normalized;

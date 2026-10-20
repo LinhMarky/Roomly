@@ -208,7 +208,7 @@ public class ProfileFragment extends Fragment {
         binding.btnProfileVerifyEmail.setVisibility(
                 loggedIn && !currentSession.isEmailVerified() ? View.VISIBLE : View.GONE);
 
-        binding.btnEditProfile.setEnabled(loggedIn);
+        binding.btnEditProfile.setEnabled(true);
 
         currentMode = viewModel.getCurrentMode();
         renderModeOptions();
@@ -228,15 +228,14 @@ public class ProfileFragment extends Fragment {
 
         boolean host = currentSession.isLoggedIn() && currentSession.hasRole(UserRole.HOST);
 
-        binding.layoutProfileMode.setVisibility(
-                tenant || tenant || host ? View.VISIBLE : View.GONE);
+        binding.layoutProfileMode.setVisibility(tenant || host ? View.VISIBLE : View.GONE);
 
         binding.btnModeTenant.setVisibility(tenant ? View.VISIBLE : View.GONE);
 
         binding.btnModeHost.setVisibility(tenant || host ? View.VISIBLE : View.GONE);
 
         binding.btnModeTenant.setEnabled(tenant);
-        binding.btnModeHost.setEnabled(tenant || host);
+        binding.btnModeHost.setEnabled(true);
 
         boolean hostBookings = host && (currentMode == AppMode.HOST || !tenant);
 
@@ -300,7 +299,13 @@ public class ProfileFragment extends Fragment {
                                             .enableHost(
                                                     () -> {
                                                         if (binding == null) return;
-                                                        viewModel.selectMode(AppMode.HOST);
+                                                        if (!viewModel.selectMode(AppMode.HOST)) {
+                                                            showMessage(
+                                                                    "Đã gửi yêu cầu bật chế độ Chủ trọ, "
+                                                                            + "nhưng quyền chưa được cập nhật. "
+                                                                            + "Hãy đăng nhập lại rồi thử lại.");
+                                                            return;
+                                                        }
                                                         currentMode = viewModel.getCurrentMode();
                                                         renderModeOptions();
                                                     },
@@ -406,6 +411,7 @@ public class ProfileFragment extends Fragment {
     }
 
     private void openScreen(Fragment fragment) {
+        // Chặn bấm lặp và transaction sau khi FragmentManager đã lưu trạng thái.
         if (binding == null || openingScreen || getParentFragmentManager().isStateSaved()) {
             return;
         }

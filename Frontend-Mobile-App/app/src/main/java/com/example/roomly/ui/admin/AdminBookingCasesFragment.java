@@ -184,14 +184,6 @@ public final class AdminBookingCasesFragment extends Fragment {
         binding.tvAdminCasesError.setText(message);
     }
 
-    private String getErrorMessage(RuntimeException exception) {
-        String message = exception.getMessage();
-
-        return message == null || message.trim().isEmpty()
-                ? "Không thể tải yêu cầu hỗ trợ. Vui lòng thử lại."
-                : message;
-    }
-
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putString(STATE_FILTER, selectedFilter);

@@ -32,21 +32,16 @@ public final class AppNotification {
             String targetType,
             String targetId,
             boolean read,
-            long createdAtMillis
-    ) {
+            long createdAtMillis) {
         this.id = requireText(id, "Mã thông báo");
         this.title = requireText(title, "Tiêu đề thông báo");
 
         if (type == null) {
-            throw new IllegalArgumentException(
-                    "Loại thông báo không được để trống"
-            );
+            throw new IllegalArgumentException("Loại thông báo không được để trống");
         }
 
         if (createdAtMillis <= 0) {
-            throw new IllegalArgumentException(
-                    "Thời gian tạo thông báo không hợp lệ"
-            );
+            throw new IllegalArgumentException("Thời gian tạo thông báo không hợp lệ");
         }
 
         this.type = type;
@@ -94,10 +89,8 @@ public final class AppNotification {
     }
 
     public String getTimeLabel() {
-        SimpleDateFormat formatter = new SimpleDateFormat(
-                "dd/MM/yyyy HH:mm",
-                new Locale("vi", "VN")
-        );
+        SimpleDateFormat formatter =
+                new SimpleDateFormat("dd/MM/yyyy HH:mm", new Locale("vi", "VN"));
 
         return formatter.format(new Date(createdAtMillis));
     }
@@ -112,24 +105,14 @@ public final class AppNotification {
         }
 
         return new AppNotification(
-                id,
-                type,
-                title,
-                body,
-                targetType,
-                targetId,
-                true,
-                createdAtMillis
-        );
+                id, type, title, body, targetType, targetId, true, createdAtMillis);
     }
 
     private static String requireText(String value, String fieldName) {
         String normalized = normalize(value);
 
         if (normalized.isEmpty()) {
-            throw new IllegalArgumentException(
-                    fieldName + " không được để trống"
-            );
+            throw new IllegalArgumentException(fieldName + " không được để trống");
         }
 
         return normalized;

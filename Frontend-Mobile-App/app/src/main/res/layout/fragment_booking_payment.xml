@@ -74,24 +74,6 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardBackgroundColor="@color/roomly_primary_light"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:text="Thanh toán sandbox: kết quả được ghi nhận trên hệ thống, không thu hoặc chuyển tiền thật."
-                        android:textColor="@color/roomly_primary"
-                        android:textSize="13sp" />
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
                     app:cardBackgroundColor="@color/roomly_surface"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="0dp"
@@ -212,71 +194,13 @@
 
                 </com.google.android.material.card.MaterialCardView>
 
-                <LinearLayout
-                    android:id="@+id/layout_payment_demo_controls"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Chọn kết quả mô phỏng"
-                        android:textColor="@color/roomly_text_primary"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_payment_demo_success"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:minHeight="48dp"
-                        android:text="Mô phỏng thành công"
-                        android:textAllCaps="false"
-                        android:textColor="@color/roomly_surface"
-                        app:backgroundTint="@color/roomly_primary"
-                        app:cornerRadius="12dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_payment_demo_failure"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:minHeight="48dp"
-                        android:text="Mô phỏng thất bại"
-                        android:textAllCaps="false"
-                        android:textColor="@color/roomly_primary"
-                        app:backgroundTint="@color/roomly_surface"
-                        app:cornerRadius="12dp"
-                        app:strokeColor="@color/roomly_primary" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_payment_demo_expired"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:minHeight="48dp"
-                        android:text="Mô phỏng hết hạn"
-                        android:textAllCaps="false"
-                        android:textColor="@color/roomly_primary"
-                        app:backgroundTint="@color/roomly_surface"
-                        app:cornerRadius="12dp"
-                        app:strokeColor="@color/roomly_primary" />
-
-                </LinearLayout>
-
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_payment_retry"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:minHeight="48dp"
-                    android:text="Thử lại thanh toán sandbox"
+                    android:text="Đồng ý điều khoản và xác nhận cọc"
                     android:textAllCaps="false"
                     android:textColor="@color/roomly_surface"
                     android:visibility="gone"

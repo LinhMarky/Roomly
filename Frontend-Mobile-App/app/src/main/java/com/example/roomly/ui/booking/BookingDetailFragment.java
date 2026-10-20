@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -100,10 +99,6 @@ public final class BookingDetailFragment extends Fragment {
                 .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit();
-    }
-
-    private void message(String text) {
-        if (isAdded()) Toast.makeText(requireContext(), text, Toast.LENGTH_LONG).show();
     }
 
     private void render(Booking booking) {

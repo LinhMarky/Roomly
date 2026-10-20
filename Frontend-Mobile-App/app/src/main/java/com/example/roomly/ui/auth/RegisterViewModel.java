@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.roomly.data.repository.AuthRepository;
 
-/** Kiểm tra thông tin đăng ký và quản lý trạng thái giao diện. Chưa gọi API tạo tài khoản. */
+/** Kiểm tra thông tin đăng ký, gọi API tạo tài khoản và quản lý trạng thái giao diện. */
 public class RegisterViewModel extends ViewModel {
 
     private final MutableLiveData<RegisterUiState> uiState =

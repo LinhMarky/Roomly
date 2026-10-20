@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 import com.example.roomly.data.api.ApiClient;
 import com.example.roomly.data.model.SessionState;
 import com.example.roomly.data.repository.SessionRepository;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 /** Đăng ký token cho tài khoản đang đăng nhập; lỗi push không chặn các chức năng khác. */
@@ -29,6 +30,7 @@ public final class PushManager {
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static SharedPreferences preferences;
     private static Context application;
+    private static boolean firebaseAvailable;
     private static String activeUserId = "";
     private static String registeredToken = "";
     private static long registrationVersion;
@@ -42,6 +44,8 @@ public final class PushManager {
         application = context.getApplicationContext();
         preferences = application.getSharedPreferences("roomly_session", Context.MODE_PRIVATE);
         createChannel();
+        firebaseAvailable = FirebaseApp.initializeApp(application) != null;
+        if (!firebaseAvailable) return;
         SessionRepository.getInstance()
                 .getSessionState()
                 .observeForever(PushManager::onSessionChanged);
@@ -84,7 +88,9 @@ public final class PushManager {
     }
 
     public static void requestPermission(Activity activity) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || activeUserId.isEmpty()) {
+        if (!firebaseAvailable
+                || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+                || activeUserId.isEmpty()) {
             return;
         }
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS)
@@ -132,6 +138,7 @@ public final class PushManager {
     public static void onNewToken(String token) {
         MAIN.post(
                 () -> {
+                    if (!firebaseAvailable) return;
                     preferences.edit().putString("fcm_token", token).apply();
                     registeredToken = "";
                     registerToken(0);
@@ -194,7 +201,8 @@ public final class PushManager {
 
     public static boolean isCurrentRecipient(String userId, String installationId) {
         SessionState session = SessionRepository.getInstance().getCurrentSession();
-        return session.isLoggedIn()
+        return firebaseAvailable
+                && session.isLoggedIn()
                 && userId != null
                 && !userId.isEmpty()
                 && userId.equals(session.getUserId())

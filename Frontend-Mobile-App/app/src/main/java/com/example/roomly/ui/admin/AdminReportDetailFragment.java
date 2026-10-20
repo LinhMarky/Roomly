@@ -176,14 +176,17 @@ public class AdminReportDetailFragment extends Fragment {
                                 showError("Không tìm thấy tin đăng.");
                                 return;
                             }
-                            com.example.roomly.ui.NavigationHelper.whenResumed(this, () -> getParentFragmentManager()
-                                    .beginTransaction()
-                                    .replace(
-                                            R.id.fragment_container,
-                                            AdminListingDetailFragment.newInstance(
-                                                    report.getTargetId()))
-                                    .addToBackStack(null)
-                                    .commit());
+                            com.example.roomly.ui.NavigationHelper.whenResumed(
+                                    this,
+                                    () ->
+                                            getParentFragmentManager()
+                                                    .beginTransaction()
+                                                    .replace(
+                                                            R.id.fragment_container,
+                                                            AdminListingDetailFragment.newInstance(
+                                                                    report.getTargetId()))
+                                                    .addToBackStack(null)
+                                                    .commit());
                         },
                         this::showError);
     }
@@ -279,9 +282,9 @@ public class AdminReportDetailFragment extends Fragment {
                                                                         Toast.makeText(
                                                                                         requireContext(),
                                                                                         "Đã ghi"
-                                                                                            + " nhận"
-                                                                                            + " kết quả"
-                                                                                            + " xử lý.",
+                                                                                                + " nhận"
+                                                                                                + " kết quả"
+                                                                                                + " xử lý.",
                                                                                         Toast
                                                                                                 .LENGTH_SHORT)
                                                                                 .show();

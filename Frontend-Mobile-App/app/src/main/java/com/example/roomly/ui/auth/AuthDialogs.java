@@ -51,10 +51,7 @@ final class AuthDialogs {
     }
 
     private static void showResetForm(
-            Fragment screen,
-            LifecycleOwner owner,
-            String email,
-            Runnable finished) {
+            Fragment screen, LifecycleOwner owner, String email, Runnable finished) {
         LinearLayout form = new LinearLayout(screen.requireContext());
         form.setOrientation(LinearLayout.VERTICAL);
         int padding = Math.round(20 * screen.getResources().getDisplayMetrics().density);
@@ -107,7 +104,7 @@ final class AuthDialogs {
                                                             > 72) {
                                                 password.setError(
                                                         "Mật khẩu cần ít nhất 12 ký tự, tối đa 72"
-                                                            + " byte UTF-8.");
+                                                                + " byte UTF-8.");
                                                 return;
                                             }
                                             dialog.setCancelable(false);
@@ -131,10 +128,10 @@ final class AuthDialogs {
                                                                                             screen
                                                                                                     .requireContext(),
                                                                                             "Đã đổi"
-                                                                                                + " mật khẩu."
-                                                                                                + " Hãy đăng"
-                                                                                                + " nhập"
-                                                                                                + " lại.",
+                                                                                                    + " mật khẩu."
+                                                                                                    + " Hãy đăng"
+                                                                                                    + " nhập"
+                                                                                                    + " lại.",
                                                                                             Toast
                                                                                                     .LENGTH_LONG)
                                                                                     .show();

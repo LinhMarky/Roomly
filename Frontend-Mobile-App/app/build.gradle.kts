@@ -2,7 +2,11 @@ import java.net.URI
 
 plugins {
     alias(libs.plugins.android.application)
-    id("com.google.gms.google-services")
+    id("com.google.gms.google-services") apply false
+}
+
+if (file("google-services.json").isFile) {
+    apply(plugin = "com.google.gms.google-services")
 }
 
 val roomlyApiUrl = providers.gradleProperty("ROOMLY_API_URL")

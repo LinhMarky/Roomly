@@ -8,8 +8,7 @@ import java.util.List;
 
 public final class DemoNotificationRepository {
 
-    private static final DemoNotificationRepository INSTANCE =
-            new DemoNotificationRepository();
+    private static final DemoNotificationRepository INSTANCE = new DemoNotificationRepository();
 
     private final List<AppNotification> notifications = new ArrayList<>();
 
@@ -21,9 +20,7 @@ public final class DemoNotificationRepository {
         return INSTANCE;
     }
 
-    public synchronized List<AppNotification> getNotifications(
-            boolean unreadOnly
-    ) {
+    public synchronized List<AppNotification> getNotifications(boolean unreadOnly) {
         List<AppNotification> result = new ArrayList<>();
 
         for (AppNotification notification : notifications) {
@@ -72,17 +69,12 @@ public final class DemoNotificationRepository {
             }
         }
 
-        throw new IllegalArgumentException(
-                "Không tìm thấy thông báo"
-        );
+        throw new IllegalArgumentException("Không tìm thấy thông báo");
     }
 
     public synchronized void markAllAsRead() {
         for (int index = 0; index < notifications.size(); index++) {
-            notifications.set(
-                    index,
-                    notifications.get(index).markAsRead()
-            );
+            notifications.set(index, notifications.get(index).markAsRead());
         }
     }
 
@@ -92,54 +84,54 @@ public final class DemoNotificationRepository {
         long hour = 60 * minute;
 
         // Thông báo mới nhất nằm đầu danh sách.
-        notifications.add(new AppNotification(
-                "DEMO-NOTIFICATION-001",
-                AppNotification.Type.SYSTEM,
-                "Chào mừng bạn đến với ROOMLY",
-                "Đây là thông báo mẫu để kiểm tra giao diện. "
-                        + "Bạn có thể lọc thông báo chưa đọc "
-                        + "và đánh dấu tất cả là đã đọc.",
-                "",
-                "",
-                false,
-                now - 5 * minute
-        ));
+        notifications.add(
+                new AppNotification(
+                        "DEMO-NOTIFICATION-001",
+                        AppNotification.Type.SYSTEM,
+                        "Chào mừng bạn đến với ROOMLY",
+                        "Đây là thông báo mẫu để kiểm tra giao diện. "
+                                + "Bạn có thể lọc thông báo chưa đọc "
+                                + "và đánh dấu tất cả là đã đọc.",
+                        "",
+                        "",
+                        false,
+                        now - 5 * minute));
 
-        notifications.add(new AppNotification(
-                "DEMO-NOTIFICATION-002",
-                AppNotification.Type.BOOKING_STATUS,
-                "Yêu cầu thuê mẫu đã được duyệt",
-                "Thông báo demo: yêu cầu thuê phòng "
-                        + "đã chuyển sang trạng thái được duyệt.",
-                "",
-                "",
-                false,
-                now - hour
-        ));
+        notifications.add(
+                new AppNotification(
+                        "DEMO-NOTIFICATION-002",
+                        AppNotification.Type.BOOKING_STATUS,
+                        "Yêu cầu thuê mẫu đã được duyệt",
+                        "Thông báo demo: yêu cầu thuê phòng "
+                                + "đã chuyển sang trạng thái được duyệt.",
+                        "",
+                        "",
+                        false,
+                        now - hour));
 
-        notifications.add(new AppNotification(
-                "DEMO-NOTIFICATION-003",
-                AppNotification.Type.PAYMENT_STATUS,
-                "Thanh toán tiền cọc mẫu thành công",
-                "Thông báo demo: hệ thống đã ghi nhận "
-                        + "kết quả thanh toán tiền cọc thành công.",
-                "",
-                "",
-                false,
-                now - 3 * hour
-        ));
+        notifications.add(
+                new AppNotification(
+                        "DEMO-NOTIFICATION-003",
+                        AppNotification.Type.PAYMENT_STATUS,
+                        "Thanh toán tiền cọc mẫu thành công",
+                        "Thông báo demo: hệ thống đã ghi nhận "
+                                + "kết quả thanh toán tiền cọc thành công.",
+                        "",
+                        "",
+                        false,
+                        now - 3 * hour));
 
-        notifications.add(new AppNotification(
-                "DEMO-NOTIFICATION-004",
-                AppNotification.Type.SYSTEM,
-                "Tìm phòng phù hợp với bạn",
-                "Bạn có thể xem thông tin phòng, lưu phòng yêu thích "
-                        + "và gửi yêu cầu thuê từ trang chi tiết phòng.",
-                "",
-                "",
-                true,
-                now - 24 * hour
-        ));
+        notifications.add(
+                new AppNotification(
+                        "DEMO-NOTIFICATION-004",
+                        AppNotification.Type.SYSTEM,
+                        "Tìm phòng phù hợp với bạn",
+                        "Bạn có thể xem thông tin phòng, lưu phòng yêu thích "
+                                + "và gửi yêu cầu thuê từ trang chi tiết phòng.",
+                        "",
+                        "",
+                        true,
+                        now - 24 * hour));
     }
 
     private static String normalize(String value) {

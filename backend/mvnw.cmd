@@ -1,14 +1,22 @@
-@REM Maven Wrapper startup batch script
-@REM
-@REM Required ENV vars:
-@REM JAVA_HOME - location of a JDK home dir
-
 @echo off
+setlocal
 
-set MAVEN_PROJECTBASEDIR=%~dp0
-set WRAPPER_JAR=%MAVEN_PROJECTBASEDIR%\.mvn\wrapper\maven-wrapper.jar
+@REM Normalize the directory to avoid a trailing backslash escaping a quoted JVM argument.
+for %%I in ("%~dp0.") do set "MAVEN_PROJECTBASEDIR=%%~fI"
+pushd "%MAVEN_PROJECTBASEDIR%"
+if errorlevel 1 exit /b 1
+set "WRAPPER_JAR=.mvn\wrapper\maven-wrapper.jar"
 
-set JAVA_EXE=java
-if defined JAVA_HOME set JAVA_EXE="%JAVA_HOME%\bin\java"
+if not exist "%WRAPPER_JAR%" (
+    echo Missing Maven Wrapper JAR: "%WRAPPER_JAR%" 1>&2
+    popd
+    exit /b 1
+)
 
-%JAVA_EXE% -classpath "%WRAPPER_JAR%" "-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%" org.apache.maven.wrapper.MavenWrapperMain %*
+set "JAVA_EXE=java"
+if defined JAVA_HOME set "JAVA_EXE=%JAVA_HOME%\bin\java.exe"
+
+"%JAVA_EXE%" %MAVEN_OPTS% -classpath "%WRAPPER_JAR%" "-Dmaven.multiModuleProjectDirectory=." org.apache.maven.wrapper.MavenWrapperMain %*
+set "ROOMLY_MAVEN_EXIT_CODE=%ERRORLEVEL%"
+popd
+exit /b %ROOMLY_MAVEN_EXIT_CODE%

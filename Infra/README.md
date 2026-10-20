@@ -1,126 +1,88 @@
-# 🏢 Homely Rental System — Infrastructure & Deployment
+# Hạ tầng ROOMLY
 
-![Docker](https://img.shields.io/badge/Docker-Ready-blue)
-![MySQL 8.4](https://img.shields.io/badge/MySQL-8.4-blue)
-![MinIO](https://img.shields.io/badge/MinIO-Storage-red)
-![Mailpit](https://img.shields.io/badge/Mailpit-SMTP-yellow)
+Hạ tầng phục vụ một backend ROOMLY dùng MySQL và thư mục ảnh local. Có thể chạy backend trực tiếp theo [README backend](../backend/README.md#chạy-local) hoặc dùng Docker Compose dưới đây.
 
-Tài liệu này cung cấp hướng dẫn toàn diện về cài đặt, vận hành và gỡ lỗi toàn bộ hạ tầng của hệ thống **Homely** (Room Rental System) thông qua **Docker Compose**.
+## Nội dung
 
----
+| Đường dẫn | Mục đích |
+| --- | --- |
+| [compose.yaml](compose.yaml) | MySQL và backend ROOMLY, volume database/ảnh riêng |
+| [roomly/.env.example](roomly/.env.example) | Mẫu cấu hình local và Docker |
+| [roomly/init/001_schema.sql](roomly/init/001_schema.sql) | Khởi tạo 14 bảng trong database trống |
 
-## 🛠 1. Yêu cầu hệ thống (Prerequisites)
+Các thư mục `.local` và file cấu hình riêng đã được [.gitignore](../.gitignore) loại khỏi Git. Dữ liệu local cũ được giữ tại vị trí hiện có; cấu hình đường dẫn ảnh/database đúng khi sử dụng lại.
 
-- **Docker Desktop** (Windows/Mac) hoặc **Docker Engine** (Linux) phải được cài đặt và đang ở trạng thái **Running**. Khuyến nghị cấp phát tối thiểu **4GB RAM** cho Docker để chạy mượt mà Spring Boot, MySQL và MinIO.
-- **Git** để quản lý và đồng bộ source code.
-- **PowerShell** (nếu dùng Windows) để thực thi các file kịch bản tự động `.ps1`.
-- Đảm bảo các port sau đang **trống** trên máy tính của bạn:
-  - `8080` (hoặc `8082`): API Backend
-  - `3306`: MySQL Database
-  - `9000` & `9001`: MinIO Object Storage
-  - `8025` & `1025`: Mailpit SMTP server
+## Chạy ROOMLY bằng Docker
 
----
+Cần Docker Engine đang chạy, Docker Compose v2 và mạng cho lần tải image/build đầu. Chạy các lệnh PowerShell từ thư mục `Infra`.
 
-## 🚀 2. Hướng dẫn sử dụng Docker Compose chi tiết
+### 1. Chuẩn bị môi trường
 
-Toàn bộ hệ thống chạy qua các containers độc lập, giao tiếp với nhau bằng mạng ảo của Docker.
+Với môi trường mới, sao chép file mẫu nếu `roomly/.env` chưa tồn tại:
 
-### 2.1. Khởi tạo môi trường
-Di chuyển vào thư mục `Infra` trên terminal và chạy script tạo file môi trường:
 ```powershell
-.\New-DemoEnv.ps1
+if (Test-Path -LiteralPath roomly/.env) {
+    Write-Output 'Giữ cấu hình roomly/.env hiện có.'
+} else {
+    Copy-Item -LiteralPath roomly/.env.example -Destination roomly/.env
+}
 ```
-> Script này sẽ tự động sinh file `.env` (chứa mật khẩu ngẫu nhiên cho MySQL, MinIO, JWT Secret...). Không bao giờ commit file `.env` lên Git để tránh lộ thông tin nhạy cảm.
 
-### 2.2. Các lệnh Docker Compose cốt lõi
+Sửa placeholder trước khi chạy: `ROOMLY_DB_PASSWORD`, `ROOMLY_MYSQL_ROOT_PASSWORD`, `ROOMLY_JWT_SECRET` và thông tin SMTP nếu cần gửi mail. JWT secret là Base64 của ít nhất 32 byte ngẫu nhiên; xem [cách sinh secret](../backend/README.md#chạy-local).
 
-**Khởi động hệ thống:**
+Các lệnh Compose dùng rõ `--env-file roomly/.env`; cấu hình local ở đường dẫn khác được giữ riêng. Giá trị mặc định của mẫu là database/user `roomly`, API host `18092`, MySQL host `3307`.
+
+### 2. Build và chạy
+
 ```powershell
-docker compose up --build -d
+docker compose --env-file roomly/.env config --quiet
+docker compose --env-file roomly/.env up --build --wait --wait-timeout 180
+docker compose --env-file roomly/.env ps
+docker compose --env-file roomly/.env logs --tail 100 backend
+Invoke-RestMethod http://127.0.0.1:18092/actuator/health
 ```
-- Lệnh này sẽ kéo (pull) image của MySQL và Mailpit về, đồng thời tự động build (biên dịch) image cho Backend (từ `../backend/Dockerfile`) và MinIO (từ `minio/Dockerfile`).
-- Cờ `-d` (detached) giúp container chạy ngầm, không khóa terminal của bạn.
 
-**Kiểm tra trạng thái (Status):**
+Nếu backend local đang dùng cổng `18092`, dừng bản local hoặc đổi `ROOMLY_HTTP_PORT` trong file môi trường và cập nhật URL kiểm tra/client tương ứng.
+
+| Dịch vụ | Cổng host, bind `127.0.0.1` | Lưu trữ |
+| --- | --- | --- |
+| Backend ROOMLY | `18092` → container `18092` | Volume `media_data` tại `/app/media` |
+| MySQL 8.4 | `3307` → container `3306` | Volume `mysql_data` |
+
+Backend dùng `ROOMLY_DB_SSL_MODE=REQUIRED` để kết nối TLS tới MySQL 8.4 ngay ở lần đăng nhập đầu, kể cả sau khi MySQL restart và cache xác thực bị xóa. `REQUIRED` mã hóa kết nối nhưng không xác minh danh tính chứng chỉ; stack này dùng mạng Docker nội bộ. Kết nối tới database bên ngoài cần cấu hình chứng chỉ và `VERIFY_IDENTITY` theo [hướng dẫn Connector/J](https://dev.mysql.com/doc/connector-j/en/connector-j-connp-props-security.html).
+
+Backend chờ MySQL healthy trước khi khởi động. Image backend có healthcheck `/actuator/health`, bao gồm kết nối database; `up --wait` chờ cả backend healthy thay vì chỉ chờ process chạy. Backend chạy bằng user `roomly`, kho ảnh nằm trong volume có quyền ghi phù hợp. MySQL chỉ chạy file init khi khởi tạo volume mới; file SQL có `DROP TABLE` và không chứa dữ liệu seed. Thay mật khẩu khởi tạo trong `.env` không tự đổi mật khẩu bên trong volume đã có.
+
+App Android emulator dùng `http://10.0.2.2:18092/api/v1/` với cổng mặc định. Khi đổi cổng host, build lại app với `ROOMLY_API_URL` phù hợp theo [README Android](../Frontend-Mobile-App/README.md#kết-nối-backend).
+
+## Mail và push
+
+Compose chuyển các biến SMTP trong file môi trường cho backend; đặt `ROOMLY_MAIL_ENABLED=true` sau khi cấu hình SMTP hoạt động. Mail bị tắt hoặc gửi lỗi sẽ không làm API trả OTP cho client.
+
+Push trong Compose mặc định tắt. Cấu hình Firebase cho backend local theo [README backend](../backend/README.md#smtp-và-firebase). Khi bổ sung Firebase cho container, mount service account chỉ đọc bên ngoài image và đặt `ROOMLY_FIREBASE_CREDENTIALS` theo đường dẫn bên trong container.
+
+## Kiểm tra
+
+`docker compose ... config --quiet` kiểm tra cấu hình; cần kiểm tra thêm trạng thái container, health endpoint và các luồng API khi stack thực chạy.
+
+Backend có unit test, test khởi động và test MySQL riêng. Xem [hướng dẫn kiểm thử](../backend/README.md#kiểm-thử). Test MySQL dùng schema `roomly_test`/`roomly_ci`, tách khỏi database đang sử dụng.
+
+OpenAPI hiện tại được sinh bởi backend tại `/v3/api-docs`; Swagger UI ở `/swagger-ui/index.html`.
+
+## Dừng và xử lý lỗi
+
 ```powershell
-docker compose ps
+docker compose --env-file roomly/.env stop
 ```
-- Dùng lệnh này để xem danh sách các container. Chú ý cột trạng thái phải là `Running` (hoặc `Up`). Nếu thấy `Exit`, hãy xem log.
 
-**Xem log (Nhật ký chạy):**
-```powershell
-docker compose logs -f backend
-```
-- Theo dõi tiến trình khởi động của Spring Boot. Nó sẽ chờ các dịch vụ khác (DB, Storage) báo `healthy` rồi mới bắt đầu.
-- Để xem log của DB: `docker compose logs -f mysql`
+`docker compose --env-file roomly/.env down` xóa container/network và giữ named volume. Cờ `-v` xóa dữ liệu database và ảnh trong volume.
 
-**Dừng hệ thống (Tạm thời):**
-```powershell
-docker compose stop
-```
-- Dừng container nhưng không xóa chúng.
-
-**Tắt và dọn dẹp hoàn toàn (Quan trọng khi lỗi nặng):**
-```powershell
-docker compose down
-```
-- Lệnh này xóa sạch container và network ảo.
-- **Lưu ý:** Nếu bạn muốn **xóa trắng luôn cả dữ liệu (Database, ảnh đã up)** để làm lại từ đầu, hãy thêm cờ `-v`:
-  ```powershell
-  docker compose down -v
-  ```
-
----
-
-## 🔧 3. Cấu trúc dịch vụ & Port Mapping
-
-Hệ thống được quy định cụ thể trong file `compose.yaml` với các ánh xạ port (Port Mapping) từ container ra ngoài máy thật như sau:
-
-| Tên Dịch Vụ | Port trong Container | Port ở Máy ngoài (Host) | Công dụng | Dữ liệu bền vững (Volume) |
-| --- | --- | --- | --- | --- |
-| **Backend** | `8080` | `8080` (hoặc cấu hình) | Chứa API Spring Boot | N/A |
-| **MySQL** | `3306` | `3307` | Database chính | `mysql_data` |
-| **MinIO** | `9000` (API), `9001` (Console)| `9000`, `9001` | Lưu file/ảnh. Web UI ở `:9001` | `minio_data` |
-| **Mailpit** | `1025` (SMTP), `8025` (UI) | `1025`, `8025` | Chặn email OTP. Xem thư tại `:8025` | N/A |
-
-*(Volume giúp dữ liệu của MySQL và MinIO không bị mất đi ngay cả khi bạn xóa container, trừ khi bạn cố tình chạy `docker compose down -v`)*
-
----
-
-## 🧪 4. Tự động hóa kiểm thử (Testing)
-
-Đứng tại thư mục `Infra`, chạy:
-
-1. **Kiểm tra Hạ tầng (`Test-Infrastructure.ps1`)**:
-   Xác minh DB, MinIO upload, Mailpit và Rate Limit.
-   ```powershell
-   .\Test-Infrastructure.ps1 -BaseUrl http://localhost:8080/api/v1
-   ```
-
-2. **Kiểm tra Luồng Nghiệp Vụ (`Test-Demo.ps1`)**:
-   Chạy luồng API thực tế (tạo tài khoản, tạo phòng, sandbox payment).
-   ```powershell
-   $env:DEMO_PASSWORD = (Get-Content .env | Select-String "DEMO_PASSWORD=").Line.Split("=")[1]
-   .\Test-Demo.ps1 -BaseUrl http://localhost:8080/api/v1
-   ```
-
----
-
-## ⚠️ 5. Các lỗi Docker thường gặp & Cách khắc phục
-
-**Lỗi 1: `unable to prepare context: path ".../infra/minio" not found`**
-- **Nguyên nhân**: Bị thiếu thư mục `minio` do Git đã ẩn nó đi.
-- **Cách sửa**: Đã được patch trên nhánh `dev`. Hãy chạy `git pull` để nhận bản mới nhất.
-
-**Lỗi 2: `ports are not available: exposing port TCP 127.0.0.1:8080...`**
-- **Nguyên nhân**: Port `8080` của bạn đang bị phần mềm khác chiếm giữ (Zalo, Skype, IIS, Tomcat...).
-- **Cách sửa**: Mở file `Infra/.env`, thêm/sửa dòng `API_PORT=8082`. Chạy lại `docker compose up -d`. Lúc này API sẽ chạy ở `localhost:8082`.
-
-**Lỗi 3: Backend bị tắt ngay lập tức (Exit 1)**
-- **Nguyên nhân**: Có thể cấu hình `JWT_SECRET` bị sai định dạng.
-- **Cách sửa**: Chạy lệnh `docker compose logs backend` để đọc lỗi. Nếu do cấu hình, hãy xóa file `.env` đi, chạy lại `.\New-DemoEnv.ps1`, và sau đó `docker compose down` rồi khởi động lại hệ thống.
-
-**Lỗi 4: Docker Desktop bị treo hoặc báo lỗi kết nối Daemon**
-- **Nguyên nhân**: Môi trường WSL2 hoặc Hyper-V trên Windows bị nghẽn.
-- **Cách sửa**: Tắt Docker Desktop. Mở Task Manager tắt hẳn các tiến trình Docker (hoặc chạy `wsl --shutdown` trên PowerShell) rồi bật lại Docker Desktop.
+| Hiện tượng | Kiểm tra |
+| --- | --- |
+| Không kết nối Docker daemon | Mở Docker Engine/Desktop, kiểm tra `docker info` |
+| Build chưa tải được dependency/image | Kiểm tra mạng/proxy tới Maven Central và registry, rồi chạy lại `up --build --wait` |
+| Backend chưa sẵn sàng | Xem `ps` và `logs --tail 100 backend mysql` với cùng `--env-file` |
+| Cổng host bị chiếm | Đổi `ROOMLY_HTTP_PORT` hoặc `ROOMLY_MYSQL_HOST_PORT`, chạy lại `up -d` |
+| `Public Key Retrieval is not allowed` | Dùng cấu hình TLS của stack; không đổi `ROOMLY_DB_SSL_MODE` thành `DISABLED` với user `caching_sha2_password` |
+| JWT không hợp lệ khi khởi động | Kiểm tra `ROOMLY_JWT_SECRET` là Base64 của ít nhất 32 byte |
+| Không thấy ảnh/database cũ | Đối chiếu đúng database và đường dẫn media; stack Docker dùng volume riêng |

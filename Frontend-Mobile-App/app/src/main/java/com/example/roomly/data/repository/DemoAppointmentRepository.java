@@ -22,15 +22,12 @@ import java.util.UUID;
  */
 public final class DemoAppointmentRepository {
 
-    private static final DemoAppointmentRepository INSTANCE =
-            new DemoAppointmentRepository();
+    private static final DemoAppointmentRepository INSTANCE = new DemoAppointmentRepository();
 
-    private final List<ViewingAppointment> appointments =
-            new ArrayList<>();
+    private final List<ViewingAppointment> appointments = new ArrayList<>();
 
     /** Khởi tạo danh sách trống. */
-    private DemoAppointmentRepository() {
-    }
+    private DemoAppointmentRepository() {}
 
     /** Trả về repository dùng chung. */
     public static DemoAppointmentRepository getInstance() {
@@ -42,32 +39,23 @@ public final class DemoAppointmentRepository {
      * Lấy người gửi từ phiên hiện tại, chặn tự đặt phòng của mình.
      */
     @MainThread
-    public ViewingAppointment createRequest(
-            String listingId,
-            String slotId,
-            String note
-    ) {
+    public ViewingAppointment createRequest(String listingId, String slotId, String note) {
         SessionState session = requireVerifiedRole(UserRole.TENANT);
 
         RoomCard room = findPublishedRoom(listingId);
 
         if (room == null) {
-            throw new IllegalStateException(
-                    "Bài đăng không còn được hiển thị."
-            );
+            throw new IllegalStateException("Bài đăng không còn được hiển thị.");
         }
 
         if (session.getUserId().equals(room.getOwnerId())) {
-            throw new IllegalStateException(
-                    "Bạn không thể đặt lịch xem phòng của chính mình."
-            );
+            throw new IllegalStateException("Bạn không thể đặt lịch xem phòng của chính mình.");
         }
 
         HostViewingSlot selectedSlot = null;
 
         for (HostViewingSlot slot :
-                DemoHostViewingRepository.getInstance()
-                        .getOpenSlotsForListing(listingId)) {
+                DemoHostViewingRepository.getInstance().getOpenSlotsForListing(listingId)) {
             if (slot.getId().equals(slotId)) {
                 selectedSlot = slot;
                 break;
@@ -75,47 +63,39 @@ public final class DemoAppointmentRepository {
         }
 
         if (selectedSlot == null) {
-            throw new IllegalStateException(
-                    "Khung giờ đã đóng, đã qua hoặc không còn tồn tại."
-            );
+            throw new IllegalStateException("Khung giờ đã đóng, đã qua hoặc không còn tồn tại.");
         }
 
         String cleanNote = note == null ? "" : note.trim();
 
         if (cleanNote.codePointCount(0, cleanNote.length()) > 300) {
-            throw new IllegalArgumentException(
-                    "Ghi chú không được vượt quá 300 ký tự."
-            );
+            throw new IllegalArgumentException("Ghi chú không được vượt quá 300 ký tự.");
         }
 
         for (ViewingAppointment existing : appointments) {
             boolean active =
-                    existing.getStatus()
-                            == ViewingAppointment.Status.PENDING
-                            || existing.getStatus()
-                            == ViewingAppointment.Status.CONFIRMED;
+                    existing.getStatus() == ViewingAppointment.Status.PENDING
+                            || existing.getStatus() == ViewingAppointment.Status.CONFIRMED;
 
             if (active
                     && session.getUserId().equals(existing.getGuestId())
                     && slotId.equals(existing.getSlotId())) {
-                throw new IllegalStateException(
-                        "Bạn đã có yêu cầu cho khung giờ này."
-                );
+                throw new IllegalStateException("Bạn đã có yêu cầu cho khung giờ này.");
             }
         }
 
-        ViewingAppointment appointment = new ViewingAppointment(
-                UUID.randomUUID().toString(),
-                room,
-                session.getUserId(),
-                session.getFullName(),
-                selectedSlot.getId(),
-                selectedSlot.getStartTimeMillis(),
-                selectedSlot.getEndTimeMillis(),
-                cleanNote,
-                ViewingAppointment.Status.PENDING,
-                ""
-        );
+        ViewingAppointment appointment =
+                new ViewingAppointment(
+                        UUID.randomUUID().toString(),
+                        room,
+                        session.getUserId(),
+                        session.getFullName(),
+                        selectedSlot.getId(),
+                        selectedSlot.getStartTimeMillis(),
+                        selectedSlot.getEndTimeMillis(),
+                        cleanNote,
+                        ViewingAppointment.Status.PENDING,
+                        "");
 
         appointments.add(appointment);
         return appointment;
@@ -127,9 +107,7 @@ public final class DemoAppointmentRepository {
      */
     @MainThread
     public void addAppointment(ViewingAppointment appointment) {
-        throw new IllegalStateException(
-                "Bạn cần chọn khung giờ đang mở của chủ trọ."
-        );
+        throw new IllegalStateException("Bạn cần chọn khung giờ đang mở của chủ trọ.");
     }
 
     /** Chỉ trả về lịch của người thuê đang đăng nhập. */
@@ -137,11 +115,9 @@ public final class DemoAppointmentRepository {
     public List<ViewingAppointment> getAppointments() {
         List<ViewingAppointment> results = new ArrayList<>();
 
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
-        if (!session.isLoggedIn()
-                || !session.hasRole(UserRole.TENANT)) {
+        if (!session.isLoggedIn() || !session.hasRole(UserRole.TENANT)) {
             return results;
         }
 
@@ -151,11 +127,7 @@ public final class DemoAppointmentRepository {
             }
         }
 
-        results.sort(
-                Comparator.comparingLong(
-                        ViewingAppointment::getAppointmentTimeMillis
-                )
-        );
+        results.sort(Comparator.comparingLong(ViewingAppointment::getAppointmentTimeMillis));
 
         return results;
     }
@@ -182,27 +154,18 @@ public final class DemoAppointmentRepository {
     public void cancelAppointment(String appointmentId) {
         requireVerifiedRole(UserRole.TENANT);
 
-        ViewingAppointment current =
-                getMyAppointmentById(appointmentId);
+        ViewingAppointment current = getMyAppointmentById(appointmentId);
 
         if (current == null) {
-            throw new IllegalStateException(
-                    "Không tìm thấy lịch thuộc tài khoản của bạn."
-            );
+            throw new IllegalStateException("Không tìm thấy lịch thuộc tài khoản của bạn.");
         }
 
         if (!current.canCancel()) {
-            throw new IllegalStateException(
-                    "Lịch này không còn được phép hủy."
-            );
+            throw new IllegalStateException("Lịch này không còn được phép hủy.");
         }
 
         replaceAppointment(
-                current.withStatus(
-                        ViewingAppointment.Status.CANCELLED,
-                        "Người thuê đã hủy lịch."
-                )
-        );
+                current.withStatus(ViewingAppointment.Status.CANCELLED, "Người thuê đã hủy lịch."));
     }
 
     /** Giữ tên hàm cũ; chuyển thao tác xóa thành cập nhật Đã hủy. */
@@ -220,11 +183,9 @@ public final class DemoAppointmentRepository {
     public List<HostViewingAppointment> getMyHostAppointments() {
         List<HostViewingAppointment> results = new ArrayList<>();
 
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
-        if (!session.isLoggedIn()
-                || !session.hasRole(UserRole.HOST)) {
+        if (!session.isLoggedIn() || !session.hasRole(UserRole.HOST)) {
             return results;
         }
 
@@ -233,20 +194,15 @@ public final class DemoAppointmentRepository {
                 continue;
             }
 
-            HostRoom room = DemoHostRoomRepository.getInstance()
-                    .getMyRoomById(appointment.getRoomId());
+            HostRoom room =
+                    DemoHostRoomRepository.getInstance().getMyRoomById(appointment.getRoomId());
 
-            if (room != null
-                    && room.getOwnerId().equals(appointment.getOwnerId())) {
+            if (room != null && room.getOwnerId().equals(appointment.getOwnerId())) {
                 results.add(toHostAppointment(appointment));
             }
         }
 
-        results.sort(
-                Comparator.comparingLong(
-                        HostViewingAppointment::getStartTimeMillis
-                )
-        );
+        results.sort(Comparator.comparingLong(HostViewingAppointment::getStartTimeMillis));
 
         return results;
     }
@@ -257,59 +213,45 @@ public final class DemoAppointmentRepository {
      */
     @MainThread
     public HostViewingAppointment processHostDecision(
-            String appointmentId,
-            boolean confirmed,
-            String reason
-    ) {
+            String appointmentId, boolean confirmed, String reason) {
         SessionState session = requireVerifiedRole(UserRole.HOST);
 
         ViewingAppointment current = null;
 
         for (ViewingAppointment appointment : appointments) {
             if (appointment.getId().equals(appointmentId)
-                    && session.getUserId().equals(
-                    appointment.getOwnerId()
-            )) {
+                    && session.getUserId().equals(appointment.getOwnerId())) {
                 current = appointment;
                 break;
             }
         }
 
         if (current == null
-                || DemoHostRoomRepository.getInstance()
-                .getMyRoomById(current.getRoomId()) == null) {
-            throw new IllegalStateException(
-                    "Không tìm thấy yêu cầu thuộc phòng của bạn."
-            );
+                || DemoHostRoomRepository.getInstance().getMyRoomById(current.getRoomId())
+                        == null) {
+            throw new IllegalStateException("Không tìm thấy yêu cầu thuộc phòng của bạn.");
         }
 
         if (current.getStatus() != ViewingAppointment.Status.PENDING) {
-            throw new IllegalStateException(
-                    "Yêu cầu này đã được xử lý hoặc đã hủy."
-            );
+            throw new IllegalStateException("Yêu cầu này đã được xử lý hoặc đã hủy.");
         }
 
-        if (current.getAppointmentTimeMillis()
-                <= System.currentTimeMillis()) {
-            throw new IllegalStateException(
-                    "Lịch đã bắt đầu hoặc đã qua."
-            );
+        if (current.getAppointmentTimeMillis() <= System.currentTimeMillis()) {
+            throw new IllegalStateException("Lịch đã bắt đầu hoặc đã qua.");
         }
 
         String cleanReason = reason == null ? "" : reason.trim();
 
         if (!confirmed && cleanReason.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Bạn cần nhập lý do từ chối."
-            );
+            throw new IllegalArgumentException("Bạn cần nhập lý do từ chối.");
         }
 
-        ViewingAppointment updated = current.withStatus(
-                confirmed
-                        ? ViewingAppointment.Status.CONFIRMED
-                        : ViewingAppointment.Status.REJECTED,
-                confirmed ? "" : cleanReason
-        );
+        ViewingAppointment updated =
+                current.withStatus(
+                        confirmed
+                                ? ViewingAppointment.Status.CONFIRMED
+                                : ViewingAppointment.Status.REJECTED,
+                        confirmed ? "" : cleanReason);
 
         replaceAppointment(updated);
         return toHostAppointment(updated);
@@ -322,8 +264,7 @@ public final class DemoAppointmentRepository {
             return null;
         }
 
-        for (RoomCard room : DemoAdminListingRepository.getInstance()
-                .getPublishedRoomCards()) {
+        for (RoomCard room : DemoAdminListingRepository.getInstance().getPublishedRoomCards()) {
             if (listingId.equals(room.getListingId())) {
                 return room;
             }
@@ -334,15 +275,10 @@ public final class DemoAppointmentRepository {
 
     /** Kiểm tra đăng nhập, vai trò và email đã xác minh. */
     private SessionState requireVerifiedRole(UserRole role) {
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
-        if (!session.isLoggedIn()
-                || !session.hasRole(role)
-                || !session.isEmailVerified()) {
-            throw new IllegalStateException(
-                    "Bạn cần đăng nhập đúng vai trò và xác minh email."
-            );
+        if (!session.isLoggedIn() || !session.hasRole(role) || !session.isEmailVerified()) {
+            throw new IllegalStateException("Bạn cần đăng nhập đúng vai trò và xác minh email.");
         }
 
         return session;
@@ -361,9 +297,7 @@ public final class DemoAppointmentRepository {
     }
 
     /** Chuyển cùng một lịch thành dữ liệu hiển thị phía chủ trọ. */
-    private HostViewingAppointment toHostAppointment(
-            ViewingAppointment appointment
-    ) {
+    private HostViewingAppointment toHostAppointment(ViewingAppointment appointment) {
         HostViewingAppointment.Status status;
 
         switch (appointment.getStatus()) {
@@ -394,7 +328,6 @@ public final class DemoAppointmentRepository {
                 appointment.getEndTimeMillis(),
                 appointment.getNote(),
                 status,
-                appointment.getDecisionReason()
-        );
+                appointment.getDecisionReason());
     }
 }

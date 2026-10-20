@@ -16,14 +16,12 @@ import java.util.UUID;
 /** Quản lý khung giờ xem phòng trong bộ nhớ. */
 public class DemoHostViewingRepository {
 
-    private static final DemoHostViewingRepository INSTANCE =
-            new DemoHostViewingRepository();
+    private static final DemoHostViewingRepository INSTANCE = new DemoHostViewingRepository();
 
     private final List<HostViewingSlot> slots = new ArrayList<>();
 
     /** Không tạo sẵn khung giờ giả. */
-    private DemoHostViewingRepository() {
-    }
+    private DemoHostViewingRepository() {}
 
     /** Trả về repository dùng chung. */
     public static DemoHostViewingRepository getInstance() {
@@ -35,8 +33,7 @@ public class DemoHostViewingRepository {
     public List<HostViewingSlot> getMySlots(String roomId) {
         List<HostViewingSlot> results = new ArrayList<>();
 
-        HostRoom room = DemoHostRoomRepository.getInstance()
-                .getMyRoomById(roomId);
+        HostRoom room = DemoHostRoomRepository.getInstance().getMyRoomById(roomId);
 
         if (room == null) {
             return results;
@@ -49,11 +46,7 @@ public class DemoHostViewingRepository {
             }
         }
 
-        results.sort(
-                Comparator.comparingLong(
-                        HostViewingSlot::getStartTimeMillis
-                )
-        );
+        results.sort(Comparator.comparingLong(HostViewingSlot::getStartTimeMillis));
 
         return results;
     }
@@ -71,11 +64,9 @@ public class DemoHostViewingRepository {
                 continue;
             }
 
-            HostRoom room = DemoHostRoomRepository.getInstance()
-                    .getMyRoomById(slot.getRoomId());
+            HostRoom room = DemoHostRoomRepository.getInstance().getMyRoomById(slot.getRoomId());
 
-            if (room != null
-                    && room.getOwnerId().equals(slot.getOwnerId())) {
+            if (room != null && room.getOwnerId().equals(slot.getOwnerId())) {
                 return slot;
             }
         }
@@ -88,9 +79,7 @@ public class DemoHostViewingRepository {
      * Không dùng dữ liệu mã chủ trọ do người gọi tự truyền vào.
      */
     @MainThread
-    public List<HostViewingSlot> getOpenSlotsForListing(
-            String listingId
-    ) {
+    public List<HostViewingSlot> getOpenSlotsForListing(String listingId) {
         List<HostViewingSlot> results = new ArrayList<>();
 
         if (listingId == null || listingId.trim().isEmpty()) {
@@ -99,8 +88,7 @@ public class DemoHostViewingRepository {
 
         RoomCard publishedRoom = null;
 
-        for (RoomCard card : DemoAdminListingRepository.getInstance()
-                .getPublishedRoomCards()) {
+        for (RoomCard card : DemoAdminListingRepository.getInstance().getPublishedRoomCards()) {
             if (listingId.equals(card.getListingId())) {
                 publishedRoom = card;
                 break;
@@ -116,54 +104,38 @@ public class DemoHostViewingRepository {
         for (HostViewingSlot slot : slots) {
             if (slot.isOpen()
                     && slot.getStartTimeMillis() > now
-                    && slot.getRoomId().equals(
-                    publishedRoom.getRoomId()
-            )
-                    && slot.getOwnerId().equals(
-                    publishedRoom.getOwnerId()
-            )) {
+                    && slot.getRoomId().equals(publishedRoom.getRoomId())
+                    && slot.getOwnerId().equals(publishedRoom.getOwnerId())) {
                 results.add(slot);
             }
         }
 
-        results.sort(
-                Comparator.comparingLong(
-                        HostViewingSlot::getStartTimeMillis
-                )
-        );
+        results.sort(Comparator.comparingLong(HostViewingSlot::getStartTimeMillis));
 
         return results;
     }
 
     /** Tạo khung giờ tương lai cho phòng thuộc chủ trọ hiện tại. */
     @MainThread
-    public HostViewingSlot createSlot(
-            String roomId,
-            long startTimeMillis,
-            long endTimeMillis
-    ) {
+    public HostViewingSlot createSlot(String roomId, long startTimeMillis, long endTimeMillis) {
         HostRoom room = requireEditableRoom(roomId);
 
         if (startTimeMillis <= System.currentTimeMillis()) {
-            throw new IllegalArgumentException(
-                    "Thời gian bắt đầu phải ở trong tương lai."
-            );
+            throw new IllegalArgumentException("Thời gian bắt đầu phải ở trong tương lai.");
         }
 
         if (endTimeMillis <= startTimeMillis) {
-            throw new IllegalArgumentException(
-                    "Giờ kết thúc phải sau giờ bắt đầu."
-            );
+            throw new IllegalArgumentException("Giờ kết thúc phải sau giờ bắt đầu.");
         }
 
-        HostViewingSlot slot = new HostViewingSlot(
-                UUID.randomUUID().toString(),
-                room.getOwnerId(),
-                room.getId(),
-                startTimeMillis,
-                endTimeMillis,
-                true
-        );
+        HostViewingSlot slot =
+                new HostViewingSlot(
+                        UUID.randomUUID().toString(),
+                        room.getOwnerId(),
+                        room.getId(),
+                        startTimeMillis,
+                        endTimeMillis,
+                        true);
 
         slots.add(slot);
         return slot;
@@ -178,18 +150,13 @@ public class DemoHostViewingRepository {
         HostViewingSlot current = getMySlotById(slotId);
 
         if (current == null) {
-            throw new IllegalStateException(
-                    "Không tìm thấy khung giờ thuộc tài khoản của bạn."
-            );
+            throw new IllegalStateException("Không tìm thấy khung giờ thuộc tài khoản của bạn.");
         }
 
         requireEditableRoom(current.getRoomId());
 
-        if (open && current.getStartTimeMillis()
-                <= System.currentTimeMillis()) {
-            throw new IllegalArgumentException(
-                    "Không thể mở khung giờ đã bắt đầu."
-            );
+        if (open && current.getStartTimeMillis() <= System.currentTimeMillis()) {
+            throw new IllegalArgumentException("Không thể mở khung giờ đã bắt đầu.");
         }
 
         HostViewingSlot updated = current.withOpen(open);
@@ -201,35 +168,25 @@ public class DemoHostViewingRepository {
             }
         }
 
-        throw new IllegalStateException(
-                "Khung giờ không còn trong dữ liệu mẫu."
-        );
+        throw new IllegalStateException("Khung giờ không còn trong dữ liệu mẫu.");
     }
 
     /** Kiểm tra đăng nhập, xác minh email và quyền sở hữu phòng. */
     private HostRoom requireEditableRoom(String roomId) {
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (!session.isLoggedIn()) {
-            throw new IllegalStateException(
-                    "Bạn cần đăng nhập để quản lý khung giờ."
-            );
+            throw new IllegalStateException("Bạn cần đăng nhập để quản lý khung giờ.");
         }
 
         if (!session.isEmailVerified()) {
-            throw new IllegalStateException(
-                    "Bạn cần xác minh email để quản lý khung giờ."
-            );
+            throw new IllegalStateException("Bạn cần xác minh email để quản lý khung giờ.");
         }
 
-        HostRoom room = DemoHostRoomRepository.getInstance()
-                .getMyRoomById(roomId);
+        HostRoom room = DemoHostRoomRepository.getInstance().getMyRoomById(roomId);
 
         if (room == null) {
-            throw new IllegalStateException(
-                    "Không tìm thấy phòng thuộc tài khoản của bạn."
-            );
+            throw new IllegalStateException("Không tìm thấy phòng thuộc tài khoản của bạn.");
         }
 
         return room;

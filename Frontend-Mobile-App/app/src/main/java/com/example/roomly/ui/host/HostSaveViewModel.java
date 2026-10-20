@@ -18,7 +18,9 @@ public class HostSaveViewModel extends ViewModel {
         this.state = state;
         if (SAVING.equals(state.get("save_phase"))) {
             // Process cũ đã mất. Không biết server đã commit hay chưa nên không gửi lại.
-            state.set("save_message", "Yêu cầu trước bị gián đoạn. Quay lại danh sách để kiểm tra kết quả trước khi lưu lại.");
+            state.set(
+                    "save_message",
+                    "Yêu cầu trước bị gián đoạn. Quay lại danh sách để kiểm tra kết quả trước khi lưu lại.");
             state.set("save_phase", UNCERTAIN);
         }
     }
@@ -33,7 +35,9 @@ public class HostSaveViewModel extends ViewModel {
     }
 
     public boolean blocksNewSave() {
-        return SAVING.equals(currentPhase()) || SAVED.equals(currentPhase()) || UNCERTAIN.equals(currentPhase());
+        return SAVING.equals(currentPhase())
+                || SAVED.equals(currentPhase())
+                || UNCERTAIN.equals(currentPhase());
     }
 
     public boolean begin(String userId) {
@@ -66,7 +70,9 @@ public class HostSaveViewModel extends ViewModel {
     }
 
     public String consumeSuccess(String userId) {
-        if (!SAVED.equals(currentPhase()) || userId == null || !userId.equals(state.get("save_owner"))) return null;
+        if (!SAVED.equals(currentPhase())
+                || userId == null
+                || !userId.equals(state.get("save_owner"))) return null;
         String result = message();
         state.set("save_phase", IDLE);
         return result;

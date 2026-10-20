@@ -19,12 +19,10 @@ import java.util.List;
 import java.util.Locale;
 
 /** Hiển thị lịch xem phòng cùng trạng thái và thao tác hủy. */
-public class ViewingAppointmentAdapter extends
-        RecyclerView.Adapter<
-                ViewingAppointmentAdapter.AppointmentViewHolder> {
+public class ViewingAppointmentAdapter
+        extends RecyclerView.Adapter<ViewingAppointmentAdapter.AppointmentViewHolder> {
 
-    private final List<ViewingAppointment> appointments =
-            new ArrayList<>();
+    private final List<ViewingAppointment> appointments = new ArrayList<>();
 
     private OnCancelAppointmentListener onCancelAppointmentListener;
 
@@ -35,60 +33,45 @@ public class ViewingAppointmentAdapter extends
     }
 
     /** Sao chép danh sách lịch hẹn ban đầu. */
-    public ViewingAppointmentAdapter(
-            List<ViewingAppointment> initialAppointments
-    ) {
+    public ViewingAppointmentAdapter(List<ViewingAppointment> initialAppointments) {
         appointments.addAll(initialAppointments);
     }
 
     /** Đăng ký hoặc gỡ nơi nhận yêu cầu hủy lịch. */
-    public void setOnCancelAppointmentListener(
-            @Nullable OnCancelAppointmentListener listener
-    ) {
+    public void setOnCancelAppointmentListener(@Nullable OnCancelAppointmentListener listener) {
         onCancelAppointmentListener = listener;
     }
 
     /** Tạo giao diện thẻ lịch xem phòng. */
     @NonNull
     @Override
-    public AppointmentViewHolder onCreateViewHolder(
-            @NonNull ViewGroup parent,
-            int viewType
-    ) {
+    public AppointmentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         ItemViewingAppointmentBinding binding =
                 ItemViewingAppointmentBinding.inflate(
-                        LayoutInflater.from(parent.getContext()),
-                        parent,
-                        false
-                );
+                        LayoutInflater.from(parent.getContext()), parent, false);
 
         return new AppointmentViewHolder(binding);
     }
 
     /** Gán dữ liệu và lấy vị trí hiện tại khi người dùng bấm Hủy lịch. */
     @Override
-    public void onBindViewHolder(
-            @NonNull AppointmentViewHolder holder,
-            int position
-    ) {
+    public void onBindViewHolder(@NonNull AppointmentViewHolder holder, int position) {
         holder.bind(appointments.get(position));
 
-        holder.binding.btnCancelAppointment.setOnClickListener(view -> {
-            int currentPosition = holder.getBindingAdapterPosition();
+        holder.binding.btnCancelAppointment.setOnClickListener(
+                view -> {
+                    int currentPosition = holder.getBindingAdapterPosition();
 
-            if (currentPosition == RecyclerView.NO_POSITION) {
-                return;
-            }
+                    if (currentPosition == RecyclerView.NO_POSITION) {
+                        return;
+                    }
 
-            ViewingAppointment appointment =
-                    appointments.get(currentPosition);
+                    ViewingAppointment appointment = appointments.get(currentPosition);
 
-            if (appointment.canCancel()
-                    && onCancelAppointmentListener != null) {
-                onCancelAppointmentListener
-                        .onCancelAppointment(appointment);
-            }
-        });
+                    if (appointment.canCancel() && onCancelAppointmentListener != null) {
+                        onCancelAppointmentListener.onCancelAppointment(appointment);
+                    }
+                });
     }
 
     /** Trả về số lịch đang hiển thị. */
@@ -98,11 +81,8 @@ public class ViewingAppointmentAdapter extends
     }
 
     /** Thay danh sách sau khi trạng thái lịch thay đổi. */
-    public void updateAppointments(
-            List<ViewingAppointment> newAppointments
-    ) {
-        List<ViewingAppointment> updated =
-                new ArrayList<>(newAppointments);
+    public void updateAppointments(List<ViewingAppointment> newAppointments) {
+        List<ViewingAppointment> updated = new ArrayList<>(newAppointments);
 
         appointments.clear();
         appointments.addAll(updated);
@@ -111,9 +91,7 @@ public class ViewingAppointmentAdapter extends
 
     /** Gỡ thao tác và ảnh trước khi tái sử dụng thẻ. */
     @Override
-    public void onViewRecycled(
-            @NonNull AppointmentViewHolder holder
-    ) {
+    public void onViewRecycled(@NonNull AppointmentViewHolder holder) {
         holder.binding.btnCancelAppointment.setOnClickListener(null);
         holder.binding.imgAppointmentRoom.setImageDrawable(null);
         super.onViewRecycled(holder);
@@ -132,30 +110,24 @@ public class ViewingAppointmentAdapter extends
 
         /** Hiển thị thông tin, trạng thái, thời gian và lý do xử lý. */
         void bind(ViewingAppointment appointment) {
-            binding.tvAppointmentRoomTitle.setText(
-                    appointment.getRoomTitle()
-            );
-            binding.tvAppointmentAddress.setText(
-                    appointment.getRoomAddress()
-            );
+            binding.tvAppointmentRoomTitle.setText(appointment.getRoomTitle());
+            binding.tvAppointmentAddress.setText(appointment.getRoomAddress());
 
             displayImage(appointment);
 
             binding.tvAppointmentTime.setText(
                     appointment.getStatusLabel()
                             + "\nBắt đầu: "
-                            + formatTime(
-                            appointment.getAppointmentTimeMillis()
-                    )
+                            + formatTime(appointment.getAppointmentTimeMillis())
                             + "\nKết thúc: "
-                            + formatTime(appointment.getEndTimeMillis())
-            );
+                            + formatTime(appointment.getEndTimeMillis()));
 
-            String note = appointment.getNote() == null
-                    ? "" : appointment.getNote().trim();
+            String note = appointment.getNote() == null ? "" : appointment.getNote().trim();
 
-            String reason = appointment.getDecisionReason() == null
-                    ? "" : appointment.getDecisionReason().trim();
+            String reason =
+                    appointment.getDecisionReason() == null
+                            ? ""
+                            : appointment.getDecisionReason().trim();
 
             String details = "";
 
@@ -164,20 +136,15 @@ public class ViewingAppointmentAdapter extends
             }
 
             if (!reason.isEmpty()) {
-                details += (details.isEmpty() ? "" : "\n")
-                        + "Lý do: " + reason;
+                details += (details.isEmpty() ? "" : "\n") + "Lý do: " + reason;
             }
 
             binding.tvAppointmentNote.setText(details);
-            binding.tvAppointmentNote.setVisibility(
-                    details.isEmpty() ? View.GONE : View.VISIBLE
-            );
+            binding.tvAppointmentNote.setVisibility(details.isEmpty() ? View.GONE : View.VISIBLE);
 
             boolean canCancel = appointment.canCancel();
 
-            binding.btnCancelAppointment.setVisibility(
-                    canCancel ? View.VISIBLE : View.GONE
-            );
+            binding.btnCancelAppointment.setVisibility(canCancel ? View.VISIBLE : View.GONE);
             binding.btnCancelAppointment.setEnabled(canCancel);
         }
 
@@ -189,34 +156,25 @@ public class ViewingAppointmentAdapter extends
 
             if (imageUri != null && !imageUri.trim().isEmpty()) {
                 try {
-                    binding.imgAppointmentRoom.setImageURI(
-                            Uri.parse(imageUri)
-                    );
-                } catch (
-                        SecurityException | IllegalArgumentException ignored
-                ) {
+                    binding.imgAppointmentRoom.setImageURI(Uri.parse(imageUri));
+                } catch (SecurityException | IllegalArgumentException ignored) {
                     binding.imgAppointmentRoom.setImageDrawable(null);
                 }
             }
 
             if (binding.imgAppointmentRoom.getDrawable() == null
                     && appointment.getRoomImageResId() != 0) {
-                binding.imgAppointmentRoom.setImageResource(
-                        appointment.getRoomImageResId()
-                );
+                binding.imgAppointmentRoom.setImageResource(appointment.getRoomImageResId());
             }
 
             binding.imgAppointmentRoom.setContentDescription(
-                    "Ảnh phòng " + appointment.getRoomTitle()
-            );
+                    "Ảnh phòng " + appointment.getRoomTitle());
         }
 
         /** Định dạng thời gian theo múi giờ thiết bị. */
         private String formatTime(long timeMillis) {
-            return new SimpleDateFormat(
-                    "HH:mm · dd/MM/yyyy",
-                    new Locale("vi", "VN")
-            ).format(new Date(timeMillis));
+            return new SimpleDateFormat("HH:mm · dd/MM/yyyy", new Locale("vi", "VN"))
+                    .format(new Date(timeMillis));
         }
     }
 }

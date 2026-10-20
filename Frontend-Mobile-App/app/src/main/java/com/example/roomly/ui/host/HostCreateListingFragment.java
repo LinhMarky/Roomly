@@ -15,7 +15,6 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import com.example.roomly.ui.NavigationHelper;
 
 import com.example.roomly.data.api.ApiClient;
 import com.example.roomly.data.model.HostRoom;
@@ -25,6 +24,7 @@ import com.example.roomly.data.model.UserRole;
 import com.example.roomly.data.repository.HostRepository;
 import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentHostCreateListingBinding;
+import com.example.roomly.ui.NavigationHelper;
 import com.example.roomly.util.ImageLoader;
 
 import org.json.JSONArray;
@@ -218,13 +218,10 @@ public class HostCreateListingFragment extends Fragment {
                         readText(binding.edtListingDeposit),
                         "fees",
                         feeEditor.values());
-        if (!saveViewModel.begin(SessionRepository.getInstance().getCurrentSession().getUserId())) return;
+        if (!saveViewModel.begin(SessionRepository.getInstance().getCurrentSession().getUserId()))
+            return;
         HostRepository.getInstance()
-                .saveListing(
-                        roomId,
-                        body,
-                        saveViewModel::listingSaved,
-                        saveViewModel::failed);
+                .saveListing(roomId, body, saveViewModel::listingSaved, saveViewModel::failed);
     }
 
     /**
@@ -392,24 +389,40 @@ public class HostCreateListingFragment extends Fragment {
 
     private void observeSaveState() {
         saveViewModel = new ViewModelProvider(this).get(HostSaveViewModel.class);
-        saveViewModel.phase().observe(getViewLifecycleOwner(), phase -> {
-            if (binding == null) return;
-            binding.btnSaveListing.setEnabled(!saveViewModel.blocksNewSave());
-            binding.progressCreateListing.setVisibility(HostSaveViewModel.SAVING.equals(phase) ? View.VISIBLE : View.GONE);
-            feeEditor.setEnabled(!saveViewModel.blocksNewSave());
+        saveViewModel
+                .phase()
+                .observe(
+                        getViewLifecycleOwner(),
+                        phase -> {
+                            if (binding == null) return;
+                            binding.btnSaveListing.setEnabled(!saveViewModel.blocksNewSave());
+                            binding.progressCreateListing.setVisibility(
+                                    HostSaveViewModel.SAVING.equals(phase)
+                                            ? View.VISIBLE
+                                            : View.GONE);
+                            feeEditor.setEnabled(!saveViewModel.blocksNewSave());
 
-            if (HostSaveViewModel.SAVED.equals(phase)) {
-                NavigationHelper.whenResumed(this, () -> {
-                    String message = saveViewModel.consumeSuccess(
-                            SessionRepository.getInstance().getCurrentSession().getUserId());
-                    if (message == null || binding == null) return;
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
-                    getParentFragmentManager().popBackStack();
-                });
-            } else if (HostSaveViewModel.ERROR.equals(phase) || HostSaveViewModel.UNCERTAIN.equals(phase)) {
-                showError(saveViewModel.message());
-            }
-        });
+                            if (HostSaveViewModel.SAVED.equals(phase)) {
+                                NavigationHelper.whenResumed(
+                                        this,
+                                        () -> {
+                                            String message =
+                                                    saveViewModel.consumeSuccess(
+                                                            SessionRepository.getInstance()
+                                                                    .getCurrentSession()
+                                                                    .getUserId());
+                                            if (message == null || binding == null) return;
+                                            Toast.makeText(
+                                                            requireContext(),
+                                                            message,
+                                                            Toast.LENGTH_LONG)
+                                                    .show();
+                                            getParentFragmentManager().popBackStack();
+                                        });
+                            } else if (HostSaveViewModel.ERROR.equals(phase)
+                                    || HostSaveViewModel.UNCERTAIN.equals(phase)) {
+                                showError(saveViewModel.message());
+                            }
+                        });
     }
-
 }

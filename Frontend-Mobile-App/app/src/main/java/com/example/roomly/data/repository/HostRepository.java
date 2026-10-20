@@ -184,14 +184,17 @@ public final class HostRepository {
             String room, JSONObject body, Runnable success, Consumer<String> failure) {
         ApiClient.execute(
                 () -> ApiClient.request("POST", "listings/room/" + room, body),
-                // Mutation đã thành công: lỗi tải lại danh sách không được biến thành yêu cầu lưu lại.
+                // Mutation đã thành công: lỗi tải lại danh sách không được biến thành yêu cầu lưu
+                // lại.
                 row -> fetchListings(ignored -> success.run(), error -> success.run()),
                 failure);
     }
 
     public void hideListing(String id, Runnable success, Consumer<String> failure) {
-        ApiClient.execute(() -> ApiClient.request("POST", "listings/" + id + "/hide", new JSONObject()),
-                row -> fetchListings(ignored -> success.run(), error -> success.run()), failure);
+        ApiClient.execute(
+                () -> ApiClient.request("POST", "listings/" + id + "/hide", new JSONObject()),
+                row -> fetchListings(ignored -> success.run(), error -> success.run()),
+                failure);
     }
 
     public void submit(String id, Runnable success, Consumer<String> failure) {
@@ -212,16 +215,27 @@ public final class HostRepository {
         }
     }
 
-    public JSONObject listingBody(String id, String title, long rent, long deposit, String description) {
+    public JSONObject listingBody(
+            String id, String title, long rent, long deposit, String description) {
         JSONArray fees = getListingFees(id);
         if (fees == null) throw new IllegalStateException("Chưa tải được phụ phí. Hãy thử lại.");
         return listingBody(title, rent, deposit, description, fees);
     }
 
-    public JSONObject listingBody(String title, long rent, long deposit, String description, JSONArray fees) {
+    public JSONObject listingBody(
+            String title, long rent, long deposit, String description, JSONArray fees) {
         if (fees == null) throw new IllegalStateException("Chưa tải được phụ phí. Hãy thử lại.");
-        return ApiClient.json("title", title, "rent_vnd", rent, "description", description,
-                "deposit_vnd", deposit, "fees", fees);
+        return ApiClient.json(
+                "title",
+                title,
+                "rent_vnd",
+                rent,
+                "description",
+                description,
+                "deposit_vnd",
+                deposit,
+                "fees",
+                fees);
     }
 
     public static JSONObject roomBody(

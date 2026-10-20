@@ -18,8 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public final class MyReportAdapter extends
-        RecyclerView.Adapter<MyReportAdapter.ReportViewHolder> {
+public final class MyReportAdapter extends RecyclerView.Adapter<MyReportAdapter.ReportViewHolder> {
 
     private final List<AdminReport> reports = new ArrayList<>();
 
@@ -35,24 +34,16 @@ public final class MyReportAdapter extends
 
     @NonNull
     @Override
-    public ReportViewHolder onCreateViewHolder(
-            @NonNull ViewGroup parent,
-            int viewType
-    ) {
-        ItemMyReportBinding binding = ItemMyReportBinding.inflate(
-                LayoutInflater.from(parent.getContext()),
-                parent,
-                false
-        );
+    public ReportViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        ItemMyReportBinding binding =
+                ItemMyReportBinding.inflate(
+                        LayoutInflater.from(parent.getContext()), parent, false);
 
         return new ReportViewHolder(binding);
     }
 
     @Override
-    public void onBindViewHolder(
-            @NonNull ReportViewHolder holder,
-            int position
-    ) {
+    public void onBindViewHolder(@NonNull ReportViewHolder holder, int position) {
         holder.bind(reports.get(position));
     }
 
@@ -71,55 +62,35 @@ public final class MyReportAdapter extends
         }
 
         void bind(AdminReport report) {
-            binding.tvMyReportStatus.setText(
-                    report.getStatusLabel()
-            );
+            binding.tvMyReportStatus.setText(report.getStatusLabel());
 
-            int statusColor = report.getStatus() == AdminReport.Status.OPEN
-                    ? R.color.roomly_primary
-                    : R.color.roomly_text_secondary;
+            int statusColor =
+                    report.getStatus() == AdminReport.Status.OPEN
+                            ? R.color.roomly_primary
+                            : R.color.roomly_text_secondary;
 
             binding.tvMyReportStatus.setTextColor(
-                    ContextCompat.getColor(
-                            binding.getRoot().getContext(),
-                            statusColor
-                    )
-            );
+                    ContextCompat.getColor(binding.getRoot().getContext(), statusColor));
 
-            binding.tvMyReportTitle.setText(
-                    report.getTargetTitle()
-            );
+            binding.tvMyReportTitle.setText(report.getTargetTitle());
 
-            binding.tvMyReportReason.setText(
-                    "Lý do: " + normalize(report.getReportReason())
-            );
+            binding.tvMyReportReason.setText("Lý do: " + normalize(report.getReportReason()));
 
-            SimpleDateFormat formatter = new SimpleDateFormat(
-                    "dd/MM/yyyy HH:mm",
-                    new Locale("vi", "VN")
-            );
+            SimpleDateFormat formatter =
+                    new SimpleDateFormat("dd/MM/yyyy HH:mm", new Locale("vi", "VN"));
 
             binding.tvMyReportTime.setText(
-                    "Đã gửi: " + formatter.format(
-                            new Date(report.getCreatedAtMillis())
-                    )
-            );
+                    "Đã gửi: " + formatter.format(new Date(report.getCreatedAtMillis())));
 
             String resolution = normalize(report.getResolutionNote());
 
             boolean showResolution =
-                    report.getStatus() != AdminReport.Status.OPEN
-                            && !resolution.isEmpty();
+                    report.getStatus() != AdminReport.Status.OPEN && !resolution.isEmpty();
 
-            binding.tvMyReportResolution.setVisibility(
-                    showResolution ? View.VISIBLE : View.GONE
-            );
+            binding.tvMyReportResolution.setVisibility(showResolution ? View.VISIBLE : View.GONE);
 
             binding.tvMyReportResolution.setText(
-                    showResolution
-                            ? "Kết quả xử lý: " + resolution
-                            : ""
-            );
+                    showResolution ? "Kết quả xử lý: " + resolution : "");
         }
 
         private static String normalize(String value) {

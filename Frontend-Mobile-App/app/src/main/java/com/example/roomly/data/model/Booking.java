@@ -45,51 +45,36 @@ public final class Booking {
             String note,
             Status status,
             long createdAtMillis,
-            boolean demo
-    ) {
+            boolean demo) {
         this.id = requireText(id, "Mã yêu cầu");
         this.roomId = requireText(roomId, "Mã phòng");
         this.roomTitle = requireText(roomTitle, "Tên phòng");
         this.roomAddress = normalize(roomAddress);
 
         if (monthlyRentVnd < 0) {
-            throw new IllegalArgumentException(
-                    "Giá thuê không được âm."
-            );
+            throw new IllegalArgumentException("Giá thuê không được âm.");
         }
 
         if (depositVnd != null && depositVnd < 0) {
-            throw new IllegalArgumentException(
-                    "Tiền cọc không được âm."
-            );
+            throw new IllegalArgumentException("Tiền cọc không được âm.");
         }
 
         if (desiredMoveInMillis <= 0 || createdAtMillis <= 0) {
-            throw new IllegalArgumentException(
-                    "Ngày vào ở và ngày tạo phải hợp lệ."
-            );
+            throw new IllegalArgumentException("Ngày vào ở và ngày tạo phải hợp lệ.");
         }
 
         if (occupantCount < 1 || occupantCount > 10) {
-            throw new IllegalArgumentException(
-                    "Số người ở phải từ 1 đến 10."
-            );
+            throw new IllegalArgumentException("Số người ở phải từ 1 đến 10.");
         }
 
         String normalizedNote = normalize(note);
 
-        if (normalizedNote.codePointCount(
-                0, normalizedNote.length()
-        ) > 1000) {
-            throw new IllegalArgumentException(
-                    "Ghi chú tối đa 1.000 ký tự."
-            );
+        if (normalizedNote.codePointCount(0, normalizedNote.length()) > 1000) {
+            throw new IllegalArgumentException("Ghi chú tối đa 1.000 ký tự.");
         }
 
         if (status == null) {
-            throw new IllegalArgumentException(
-                    "Trạng thái không được để trống."
-            );
+            throw new IllegalArgumentException("Trạng thái không được để trống.");
         }
 
         this.monthlyRentVnd = monthlyRentVnd;
@@ -156,9 +141,7 @@ public final class Booking {
 
     public Booking cancelDemo() {
         if (!canCancelDemo()) {
-            throw new IllegalStateException(
-                    "Chỉ có thể hủy yêu cầu demo đang chờ duyệt."
-            );
+            throw new IllegalStateException("Chỉ có thể hủy yêu cầu demo đang chờ duyệt.");
         }
 
         return copyWithStatus(Status.CANCELLED);
@@ -170,9 +153,7 @@ public final class Booking {
 
     public Booking approveDemo() {
         if (!canReviewDemo()) {
-            throw new IllegalStateException(
-                    "Chỉ có thể duyệt yêu cầu demo đang chờ duyệt."
-            );
+            throw new IllegalStateException("Chỉ có thể duyệt yêu cầu demo đang chờ duyệt.");
         }
 
         return copyWithStatus(Status.APPROVED);
@@ -180,9 +161,7 @@ public final class Booking {
 
     public Booking rejectDemo() {
         if (!canReviewDemo()) {
-            throw new IllegalStateException(
-                    "Chỉ có thể từ chối yêu cầu demo đang chờ duyệt."
-            );
+            throw new IllegalStateException("Chỉ có thể từ chối yêu cầu demo đang chờ duyệt.");
         }
 
         return copyWithStatus(Status.REJECTED);
@@ -194,9 +173,7 @@ public final class Booking {
 
     public Booking confirmDemo() {
         if (!canConfirmDemo()) {
-            throw new IllegalStateException(
-                    "Chỉ có thể xác nhận yêu cầu demo đã được duyệt."
-            );
+            throw new IllegalStateException("Chỉ có thể xác nhận yêu cầu demo đã được duyệt.");
         }
 
         return copyWithStatus(Status.CONFIRMED);
@@ -208,9 +185,7 @@ public final class Booking {
 
     public Booking completeDemo() {
         if (!canCompleteDemo()) {
-            throw new IllegalStateException(
-                    "Chỉ có thể hoàn tất yêu cầu demo đã xác nhận."
-            );
+            throw new IllegalStateException("Chỉ có thể hoàn tất yêu cầu demo đã xác nhận.");
         }
 
         return copyWithStatus(Status.COMPLETED);
@@ -229,8 +204,7 @@ public final class Booking {
                 note,
                 newStatus,
                 createdAtMillis,
-                demo
-        );
+                demo);
     }
 
     public String getMonthlyRentLabel() {
@@ -284,8 +258,7 @@ public final class Booking {
                 return "Yêu cầu đang chờ chủ trọ xem xét.";
 
             case APPROVED:
-                return "Chủ trọ đã duyệt yêu cầu. "
-                        + "Xem chi tiết để kiểm tra bước tiếp theo.";
+                return "Chủ trọ đã duyệt yêu cầu. " + "Xem chi tiết để kiểm tra bước tiếp theo.";
 
             case CONFIRMED:
                 return "Yêu cầu thuê đã được xác nhận. "
@@ -309,18 +282,13 @@ public final class Booking {
     }
 
     private static String formatVnd(long amount) {
-        NumberFormat formatter = NumberFormat.getIntegerInstance(
-                new Locale("vi", "VN")
-        );
+        NumberFormat formatter = NumberFormat.getIntegerInstance(new Locale("vi", "VN"));
 
         return formatter.format(amount) + " ₫";
     }
 
     private static String formatDate(long millis) {
-        SimpleDateFormat formatter = new SimpleDateFormat(
-                "dd/MM/yyyy",
-                new Locale("vi", "VN")
-        );
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy", new Locale("vi", "VN"));
 
         return formatter.format(new Date(millis));
     }
@@ -329,16 +297,11 @@ public final class Booking {
         return value == null ? "" : value.trim();
     }
 
-    private static String requireText(
-            String value,
-            String fieldName
-    ) {
+    private static String requireText(String value, String fieldName) {
         String normalized = normalize(value);
 
         if (normalized.isEmpty()) {
-            throw new IllegalArgumentException(
-                    fieldName + " không được để trống."
-            );
+            throw new IllegalArgumentException(fieldName + " không được để trống.");
         }
 
         return normalized;

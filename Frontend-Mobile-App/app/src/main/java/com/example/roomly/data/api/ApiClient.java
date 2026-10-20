@@ -30,6 +30,7 @@ public final class ApiClient {
     private static SharedPreferences preferences;
     private static Context application;
     private static volatile String accessToken = "";
+    // Đổi khi đăng nhập/đăng xuất để bỏ callback của tài khoản cũ; refresh giữ nguyên phiên.
     private static volatile long sessionVersion;
     private static final Object REFRESH_LOCK = new Object();
     private static final ThreadLocal<Long> REQUEST_SESSION = new ThreadLocal<>();
@@ -117,6 +118,7 @@ public final class ApiClient {
     private static byte[] downloadImage(String path, String token) throws IOException {
         java.net.URI base = java.net.URI.create(BuildConfig.API_BASE_URL);
         java.net.URI target = base.resolve(path);
+        // Chỉ gửi Bearer token tới cùng máy chủ API, kể cả khi URL ảnh do server trả về.
         if (!java.util.Objects.equals(base.getHost(), target.getHost())
                 || base.getPort() != target.getPort()
                 || !base.getScheme().equals(target.getScheme()))
@@ -219,6 +221,7 @@ public final class ApiClient {
     }
 
     private static void refresh(String rejectedToken) throws IOException, JSONException {
+        // Nhiều request có thể cùng nhận 401, nhưng refresh token chỉ được dùng một lần.
         synchronized (REFRESH_LOCK) {
             checkRequestSession();
             if (!accessToken.equals(rejectedToken)) return;
@@ -232,6 +235,7 @@ public final class ApiClient {
                                         json("refresh_token", refreshToken()),
                                         "");
                 synchronized (ApiClient.class) {
+                    // Không ghi token cũ đè lên phiên vừa đăng nhập trong lúc chờ mạng.
                     checkRequestSession();
                     if (!accessToken.equals(rejectedToken)) return;
                     accessToken = response.getString("access_token");

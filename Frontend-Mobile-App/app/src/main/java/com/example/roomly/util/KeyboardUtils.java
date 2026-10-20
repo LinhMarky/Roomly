@@ -14,8 +14,7 @@ import androidx.core.view.WindowInsetsControllerCompat;
 
 public final class KeyboardUtils {
 
-    private KeyboardUtils() {
-    }
+    private KeyboardUtils() {}
 
     public static void hide(View root) {
         if (root == null) {
@@ -24,25 +23,20 @@ public final class KeyboardUtils {
 
         View focused = root.findFocus();
 
-        WindowInsetsControllerCompat controller =
-                ViewCompat.getWindowInsetsController(root);
+        WindowInsetsControllerCompat controller = ViewCompat.getWindowInsetsController(root);
 
         if (controller != null) {
             controller.hide(WindowInsetsCompat.Type.ime());
         }
 
-        InputMethodManager manager = (InputMethodManager)
-                root.getContext().getSystemService(
-                        Context.INPUT_METHOD_SERVICE
-                );
+        InputMethodManager manager =
+                (InputMethodManager)
+                        root.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 
         View tokenView = focused != null ? focused : root;
 
         if (manager != null && tokenView.getWindowToken() != null) {
-            manager.hideSoftInputFromWindow(
-                    tokenView.getWindowToken(),
-                    0
-            );
+            manager.hideSoftInputFromWindow(tokenView.getWindowToken(), 0);
         }
 
         if (focused instanceof EditText) {
@@ -64,29 +58,30 @@ public final class KeyboardUtils {
     private static void attachTouchListeners(View view, View root) {
         // Giữ nguyên thao tác nhập và chọn chữ trong ô nhập.
         if (!(view instanceof EditText)) {
-            view.setOnTouchListener((touchedView, event) -> {
-                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                    View focused = root.findFocus();
+            view.setOnTouchListener(
+                    (touchedView, event) -> {
+                        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                            View focused = root.findFocus();
 
-                    if (focused instanceof EditText) {
-                        Rect bounds = new Rect();
-                        boolean visible =
-                                focused.getGlobalVisibleRect(bounds);
+                            if (focused instanceof EditText) {
+                                Rect bounds = new Rect();
+                                boolean visible = focused.getGlobalVisibleRect(bounds);
 
-                        boolean inside = visible && bounds.contains(
-                                (int) event.getRawX(),
-                                (int) event.getRawY()
-                        );
+                                boolean inside =
+                                        visible
+                                                && bounds.contains(
+                                                        (int) event.getRawX(),
+                                                        (int) event.getRawY());
 
-                        if (!inside) {
-                            hide(root);
+                                if (!inside) {
+                                    hide(root);
+                                }
+                            }
                         }
-                    }
-                }
 
-                // Cho phép nút, danh sách và vùng cuộn hoạt động tiếp.
-                return false;
-            });
+                        // Cho phép nút, danh sách và vùng cuộn hoạt động tiếp.
+                        return false;
+                    });
         }
 
         if (view instanceof ViewGroup) {

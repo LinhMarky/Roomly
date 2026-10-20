@@ -20,7 +20,6 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import com.example.roomly.ui.NavigationHelper;
 
 import com.example.roomly.R;
 import com.example.roomly.data.model.RoomCard.RoomType;
@@ -29,6 +28,7 @@ import com.example.roomly.data.model.UserRole;
 import com.example.roomly.data.repository.HostRepository;
 import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentHostAddRoomBinding;
+import com.example.roomly.ui.NavigationHelper;
 import com.example.roomly.ui.auth.LoginFragment;
 import com.example.roomly.ui.auth.VerifyEmailFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -400,7 +400,8 @@ public class HostAddRoomFragment extends Fragment {
                         selectedRoomType,
                         Integer.parseInt(readText(binding.edtRoomMaxOccupants)),
                         selectedAmenities);
-        if (!saveViewModel.begin(SessionRepository.getInstance().getCurrentSession().getUserId())) return;
+        if (!saveViewModel.begin(SessionRepository.getInstance().getCurrentSession().getUserId()))
+            return;
         HostRepository.getInstance()
                 .saveRoom(
                         null,
@@ -622,22 +623,38 @@ public class HostAddRoomFragment extends Fragment {
 
     private void observeSaveState() {
         saveViewModel = new ViewModelProvider(this).get(HostSaveViewModel.class);
-        saveViewModel.phase().observe(getViewLifecycleOwner(), phase -> {
-            if (binding == null) return;
-            binding.btnCreateRoom.setEnabled(!saveViewModel.blocksNewSave());
-            binding.progressAddRoom.setVisibility(HostSaveViewModel.SAVING.equals(phase) ? View.VISIBLE : View.GONE);
-            if (HostSaveViewModel.SAVED.equals(phase)) {
-                NavigationHelper.whenResumed(this, () -> {
-                    String message = saveViewModel.consumeSuccess(
-                            SessionRepository.getInstance().getCurrentSession().getUserId());
-                    if (message == null || binding == null) return;
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
-                    getParentFragmentManager().popBackStack();
-                });
-            } else if (HostSaveViewModel.ERROR.equals(phase) || HostSaveViewModel.UNCERTAIN.equals(phase)) {
-                showFormError(saveViewModel.message());
-            }
-        });
+        saveViewModel
+                .phase()
+                .observe(
+                        getViewLifecycleOwner(),
+                        phase -> {
+                            if (binding == null) return;
+                            binding.btnCreateRoom.setEnabled(!saveViewModel.blocksNewSave());
+                            binding.progressAddRoom.setVisibility(
+                                    HostSaveViewModel.SAVING.equals(phase)
+                                            ? View.VISIBLE
+                                            : View.GONE);
+                            if (HostSaveViewModel.SAVED.equals(phase)) {
+                                NavigationHelper.whenResumed(
+                                        this,
+                                        () -> {
+                                            String message =
+                                                    saveViewModel.consumeSuccess(
+                                                            SessionRepository.getInstance()
+                                                                    .getCurrentSession()
+                                                                    .getUserId());
+                                            if (message == null || binding == null) return;
+                                            Toast.makeText(
+                                                            requireContext(),
+                                                            message,
+                                                            Toast.LENGTH_LONG)
+                                                    .show();
+                                            getParentFragmentManager().popBackStack();
+                                        });
+                            } else if (HostSaveViewModel.ERROR.equals(phase)
+                                    || HostSaveViewModel.UNCERTAIN.equals(phase)) {
+                                showFormError(saveViewModel.message());
+                            }
+                        });
     }
-
 }

@@ -5,10 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+
 import com.example.roomly.databinding.FragmentVerifyEmailBinding;
 import com.example.roomly.ui.NavigationHelper;
 
@@ -26,21 +28,28 @@ public class VerifyEmailFragment extends Fragment {
         return screen;
     }
 
-    @Override public void onCreate(@Nullable Bundle state) {
+    @Override
+    public void onCreate(@Nullable Bundle state) {
         super.onCreate(state);
         if (getArguments() != null) email = getArguments().getString("email", "").trim();
         viewModel = new ViewModelProvider(this).get(AuthChallengeViewModel.class);
     }
 
-    @Nullable @Override public View onCreateView(@NonNull LayoutInflater inflater,
-            @Nullable ViewGroup container, @Nullable Bundle state) {
+    @Nullable
+    @Override
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle state) {
         binding = FragmentVerifyEmailBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
-    @Override public void onViewCreated(@NonNull View view, @Nullable Bundle state) {
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle state) {
         binding.tvVerifyEmailAddress.setText(email);
-        binding.btnVerifyEmailBack.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+        binding.btnVerifyEmailBack.setOnClickListener(
+                v -> getParentFragmentManager().popBackStack());
         binding.btnResendVerification.setOnClickListener(v -> viewModel.requestCode(email, false));
         binding.btnCheckVerification.setOnClickListener(v -> verify());
         viewModel.phase().observe(getViewLifecycleOwner(), phase -> render(phase));
@@ -63,19 +72,28 @@ public class VerifyEmailFragment extends Fragment {
         binding.btnCheckVerification.setEnabled(!busy && !email.isEmpty());
         binding.edtVerificationCode.setEnabled(!busy);
         binding.tvVerifyEmailError.setText(viewModel.message());
-        binding.tvVerifyEmailError.setVisibility(AuthChallengeViewModel.ERROR.equals(phase) ? View.VISIBLE : View.GONE);
-        binding.tvVerifyEmailResult.setText(viewModel.message().isEmpty() ? "Hãy kiểm tra hộp thư của bạn." : viewModel.message());
-        binding.tvVerifyEmailResult.setVisibility(AuthChallengeViewModel.CODE_SENT.equals(phase) ? View.VISIBLE : View.GONE);
+        binding.tvVerifyEmailError.setVisibility(
+                AuthChallengeViewModel.ERROR.equals(phase) ? View.VISIBLE : View.GONE);
+        binding.tvVerifyEmailResult.setText(
+                viewModel.message().isEmpty()
+                        ? "Hãy kiểm tra hộp thư của bạn."
+                        : viewModel.message());
+        binding.tvVerifyEmailResult.setVisibility(
+                AuthChallengeViewModel.CODE_SENT.equals(phase) ? View.VISIBLE : View.GONE);
         if (AuthChallengeViewModel.COMPLETE.equals(phase)) {
-            NavigationHelper.whenResumed(this, () -> {
-                if (!viewModel.consumeCompletion()) return;
-                Toast.makeText(requireContext(), "Đã xác minh email.", Toast.LENGTH_LONG).show();
-                getParentFragmentManager().popBackStack();
-            });
+            NavigationHelper.whenResumed(
+                    this,
+                    () -> {
+                        if (!viewModel.consumeCompletion()) return;
+                        Toast.makeText(requireContext(), "Đã xác minh email.", Toast.LENGTH_LONG)
+                                .show();
+                        getParentFragmentManager().popBackStack();
+                    });
         }
     }
 
-    @Override public void onDestroyView() {
+    @Override
+    public void onDestroyView() {
         binding = null;
         super.onDestroyView();
     }

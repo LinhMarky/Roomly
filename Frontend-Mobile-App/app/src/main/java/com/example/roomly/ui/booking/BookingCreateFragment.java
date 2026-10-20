@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -420,6 +419,8 @@ public final class BookingCreateFragment extends Fragment {
         submitting = true;
         setFormEnabled(false);
         binding.progressBookingSubmit.setVisibility(View.VISIBLE);
+        // Đọc lại tin trước khi gửi để người thuê không xác nhận mức giá đã thay đổi.
+        // Backend vẫn là nơi kiểm tra cuối cùng và lưu snapshot điều khoản.
         String listingId = requireArguments().getString(ARG_LISTING_ID, "");
         ApiClient.execute(
                 () ->
@@ -522,12 +523,6 @@ public final class BookingCreateFragment extends Fragment {
         if (binding != null) {
             binding.tvBookingError.setText(message);
             binding.tvBookingError.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void showMessage(String message) {
-        if (isAdded()) {
-            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
         }
     }
 

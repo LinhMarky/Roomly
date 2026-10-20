@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -73,29 +72,6 @@ public class AdminDashboardFragment extends Fragment {
                 currentSession.isLoggedIn()
                         ? "Tài khoản hiện tại không có quyền quản trị."
                         : "Bạn cần đăng nhập tài khoản có quyền quản trị.");
-    }
-
-    /**
-     * Kiểm tra lại quyền khi bấm nút và báo màn hình chưa được nối. Bước sau sẽ thay thông báo bằng
-     * điều hướng đến chức năng cụ thể.
-     */
-    private void showPendingFeature(String featureName) {
-        if (binding == null) {
-            return;
-        }
-
-        SessionState session = SessionRepository.getInstance().getCurrentSession();
-
-        if (!session.isLoggedIn() || !session.hasRole(UserRole.ADMIN)) {
-            renderSession(session);
-            return;
-        }
-
-        Toast.makeText(
-                        requireContext(),
-                        featureName + ": đang xây dựng giao diện.",
-                        Toast.LENGTH_SHORT)
-                .show();
     }
 
     /** Kiểm tra quyền ADMIN và mở danh sách bài đăng cần quản trị. */

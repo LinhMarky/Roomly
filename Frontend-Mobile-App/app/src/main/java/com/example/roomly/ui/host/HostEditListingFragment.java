@@ -15,19 +15,19 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import com.example.roomly.ui.NavigationHelper;
 
 import com.example.roomly.data.model.HostListing;
-import com.example.roomly.data.model.UserRole;
 import com.example.roomly.data.model.HostRoom;
 import com.example.roomly.data.model.RoomCard;
 import com.example.roomly.data.model.SessionState;
+import com.example.roomly.data.model.UserRole;
 import com.example.roomly.data.repository.HostRepository;
 import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentHostEditListingBinding;
+import com.example.roomly.ui.NavigationHelper;
 
-import org.json.JSONObject;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 /** Chỉnh sửa bài đăng và phụ phí rồi lưu lên backend; tin cần được duyệt lại. */
 public class HostEditListingFragment extends Fragment {
@@ -90,9 +90,14 @@ public class HostEditListingFragment extends Fragment {
 
         displayInitialData();
         if (getAccessibleListing() == null) {
-            HostRepository.getInstance().fetchListings(rows -> {
-                if (binding != null) displayInitialData();
-            }, message -> { if (binding != null) showError(message); });
+            HostRepository.getInstance()
+                    .fetchListings(
+                            rows -> {
+                                if (binding != null) displayInitialData();
+                            },
+                            message -> {
+                                if (binding != null) showError(message);
+                            });
         }
         setupKeyboardInsets();
 
@@ -154,7 +159,10 @@ public class HostEditListingFragment extends Fragment {
 
         try {
             String savedFees = draft == null ? null : draft.getString("fees");
-            feeEditor.load(savedFees == null ? HostRepository.getInstance().getListingFees(listingId) : new JSONArray(savedFees));
+            feeEditor.load(
+                    savedFees == null
+                            ? HostRepository.getInstance().getListingFees(listingId)
+                            : new JSONArray(savedFees));
         } catch (org.json.JSONException error) {
             feeEditor.load(null);
         }
@@ -302,8 +310,10 @@ public class HostEditListingFragment extends Fragment {
 
         JSONObject body =
                 HostRepository.getInstance()
-                        .listingBody(title, monthlyRent, depositVnd, description, feeEditor.values());
-        if (!saveViewModel.begin(SessionRepository.getInstance().getCurrentSession().getUserId())) return;
+                        .listingBody(
+                                title, monthlyRent, depositVnd, description, feeEditor.values());
+        if (!saveViewModel.begin(SessionRepository.getInstance().getCurrentSession().getUserId()))
+            return;
         HostRepository.getInstance()
                 .saveListing(
                         listing.getRoomId(),
@@ -418,7 +428,8 @@ public class HostEditListingFragment extends Fragment {
         draft.putString("deposit", readText(binding.edtEditListingDeposit));
 
         draft.putString("description", readText(binding.edtEditListingDescription));
-        if (feeEditor != null && feeEditor.isLoaded()) draft.putString("fees", feeEditor.values().toString());
+        if (feeEditor != null && feeEditor.isLoaded())
+            draft.putString("fees", feeEditor.values().toString());
     }
 
     /** Lưu nội dung đang nhập khi Android cần khôi phục Fragment. */
@@ -458,24 +469,37 @@ public class HostEditListingFragment extends Fragment {
 
     private void observeSaveState() {
         saveViewModel = new ViewModelProvider(this).get(HostSaveViewModel.class);
-        saveViewModel.phase().observe(getViewLifecycleOwner(), phase -> {
-            if (binding == null) return;
-            setSaving(HostSaveViewModel.SAVING.equals(phase));
-            binding.btnEditListingSave.setEnabled(!saveViewModel.blocksNewSave());
-            feeEditor.setEnabled(!saveViewModel.blocksNewSave());
+        saveViewModel
+                .phase()
+                .observe(
+                        getViewLifecycleOwner(),
+                        phase -> {
+                            if (binding == null) return;
+                            setSaving(HostSaveViewModel.SAVING.equals(phase));
+                            binding.btnEditListingSave.setEnabled(!saveViewModel.blocksNewSave());
+                            feeEditor.setEnabled(!saveViewModel.blocksNewSave());
 
-            if (HostSaveViewModel.SAVED.equals(phase)) {
-                NavigationHelper.whenResumed(this, () -> {
-                    String message = saveViewModel.consumeSuccess(
-                            SessionRepository.getInstance().getCurrentSession().getUserId());
-                    if (message == null || binding == null) return;
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
-                    getParentFragmentManager().popBackStack();
-                });
-            } else if (HostSaveViewModel.ERROR.equals(phase) || HostSaveViewModel.UNCERTAIN.equals(phase)) {
-                showError(saveViewModel.message());
-            }
-        });
+                            if (HostSaveViewModel.SAVED.equals(phase)) {
+                                NavigationHelper.whenResumed(
+                                        this,
+                                        () -> {
+                                            String message =
+                                                    saveViewModel.consumeSuccess(
+                                                            SessionRepository.getInstance()
+                                                                    .getCurrentSession()
+                                                                    .getUserId());
+                                            if (message == null || binding == null) return;
+                                            Toast.makeText(
+                                                            requireContext(),
+                                                            message,
+                                                            Toast.LENGTH_LONG)
+                                                    .show();
+                                            getParentFragmentManager().popBackStack();
+                                        });
+                            } else if (HostSaveViewModel.ERROR.equals(phase)
+                                    || HostSaveViewModel.UNCERTAIN.equals(phase)) {
+                                showError(saveViewModel.message());
+                            }
+                        });
     }
-
 }

@@ -192,6 +192,7 @@ public class RoomDetailFragment extends Fragment {
                 .observe(
                         getViewLifecycleOwner(),
                         session -> {
+                            // Đóng form của tài khoản cũ khi đăng xuất, đổi user hoặc mất quyền.
                             if (bookingDialog != null) {
                                 SessionState current =
                                         SessionRepository.getInstance().getCurrentSession();

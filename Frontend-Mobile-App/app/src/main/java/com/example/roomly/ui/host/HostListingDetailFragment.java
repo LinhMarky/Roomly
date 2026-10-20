@@ -14,7 +14,6 @@ import androidx.fragment.app.Fragment;
 import com.example.roomly.R;
 import com.example.roomly.data.model.HostListing;
 import com.example.roomly.data.model.HostRoom;
-import com.example.roomly.data.model.RoomCard;
 import com.example.roomly.data.model.SessionState;
 import com.example.roomly.data.model.UserRole;
 import com.example.roomly.data.repository.HostRepository;
@@ -180,10 +179,12 @@ public class HostListingDetailFragment extends Fragment {
                     com.example.roomly.data.model.ListingFee.fromJson(fees);
             if (feeRows.isEmpty()) text.append("Không có phụ phí bổ sung.");
             for (com.example.roomly.data.model.ListingFee fee : feeRows) {
-                text.append(com.example.roomly.data.api.ApiMapper.feeName(fee.getCode())).append(": ")
+                text.append(com.example.roomly.data.api.ApiMapper.feeName(fee.getCode()))
+                        .append(": ")
                         .append(com.example.roomly.data.api.ApiMapper.vnd(fee.getAmount()))
                         .append(fee.getUnit().isEmpty() ? "" : "/" + fee.getUnit())
-                        .append("PER_UNIT".equals(fee.getMode()) ? " (theo sử dụng)" : " (cố định)").append("\n");
+                        .append("PER_UNIT".equals(fee.getMode()) ? " (theo sử dụng)" : " (cố định)")
+                        .append("\n");
             }
         } catch (Exception error) {
             text.append("Chưa tải được phụ phí.");
@@ -208,11 +209,13 @@ public class HostListingDetailFragment extends Fragment {
         binding.btnListingDetailEdit.setVisibility(editable ? View.VISIBLE : View.GONE);
 
         binding.btnListingDetailSubmit.setVisibility(submittable ? View.VISIBLE : View.GONE);
-        binding.btnListingDetailHide.setVisibility(listing.getStatus().canHide() ? View.VISIBLE : View.GONE);
+        binding.btnListingDetailHide.setVisibility(
+                listing.getStatus().canHide() ? View.VISIBLE : View.GONE);
 
         binding.btnListingDetailEdit.setEnabled(editable && room != null && submitDialog == null);
 
-        binding.btnListingDetailSubmit.setEnabled(submittable && room != null && submitDialog == null);
+        binding.btnListingDetailSubmit.setEnabled(
+                submittable && room != null && submitDialog == null);
 
         clearImage();
 
@@ -317,8 +320,10 @@ public class HostListingDetailFragment extends Fragment {
         }
 
         HostRoom room = HostRepository.getInstance().getMyRoomById(listing.getRoomId());
-        if (!listing.getStatus().canEdit() || room == null
-                || room.getAvailability() != com.example.roomly.data.model.RoomCard.Availability.AVAILABLE) {
+        if (!listing.getStatus().canEdit()
+                || room == null
+                || room.getAvailability()
+                        != com.example.roomly.data.model.RoomCard.Availability.AVAILABLE) {
             showMessage("Trạng thái tin hoặc phòng không cho phép sửa.");
             return;
         }
@@ -523,16 +528,19 @@ public class HostListingDetailFragment extends Fragment {
         HostListing listing = HostRepository.getInstance().getMyListingById(listingId);
         if (binding == null || listing == null || !listing.getStatus().canHide()) return;
         binding.btnListingDetailHide.setEnabled(false);
-        HostRepository.getInstance().hideListing(listingId, () -> {
-            if (binding == null) return;
-            binding.btnListingDetailHide.setEnabled(true);
-            displayListing();
-            showMessage("Đã ẩn tin khỏi danh sách công khai.");
-        }, message -> {
-            if (binding == null) return;
-            binding.btnListingDetailHide.setEnabled(true);
-            showMessage(message);
-        });
+        HostRepository.getInstance()
+                .hideListing(
+                        listingId,
+                        () -> {
+                            if (binding == null) return;
+                            binding.btnListingDetailHide.setEnabled(true);
+                            displayListing();
+                            showMessage("Đã ẩn tin khỏi danh sách công khai.");
+                        },
+                        message -> {
+                            if (binding == null) return;
+                            binding.btnListingDetailHide.setEnabled(true);
+                            showMessage(message);
+                        });
     }
-
 }

@@ -50,11 +50,6 @@ public final class BookingPaymentFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         binding.btnPaymentBack.setOnClickListener(v -> getParentFragmentManager().popBackStack());
         binding.btnPaymentRetry.setOnClickListener(v -> acceptTerms());
-        binding.btnPaymentDemoSuccess.setText("Mô phỏng thanh toán thành công");
-        binding.btnPaymentDemoFailure.setText("Mô phỏng thanh toán thất bại");
-        binding.btnPaymentDemoExpired.setVisibility(View.GONE);
-        binding.btnPaymentDemoSuccess.setOnClickListener(v -> simulate("SUCCEEDED"));
-        binding.btnPaymentDemoFailure.setOnClickListener(v -> simulate("FAILED"));
     }
 
     @Override
@@ -103,13 +98,11 @@ public final class BookingPaymentFragment extends Fragment {
         binding.tvPaymentAmount.setText(booking.getDepositLabel());
         binding.tvPaymentStatus.setText(booking.getStatusLabel());
         binding.tvPaymentStatusDescription.setText(
-                "Thanh toán sandbox phục vụ báo cáo, không thu tiền thật. Giá và cọc áp dụng theo"
-                        + " yêu cầu đã gửi.\n"
+                "Giá thuê, tiền cọc và phụ phí áp dụng theo yêu cầu đã gửi.\n"
                         + ApiMapper.feeSummary(current));
         binding.btnPaymentRetry.setText("Đồng ý điều khoản và xác nhận cọc");
         binding.btnPaymentRetry.setVisibility(
                 "APPROVED".equals(current.optString("status")) ? View.VISIBLE : View.GONE);
-        binding.layoutPaymentDemoControls.setVisibility(View.GONE);
         ApiClient.execute(
                 () ->
                         (JSONObject)
@@ -125,15 +118,33 @@ public final class BookingPaymentFragment extends Fragment {
 
     private void renderPayment() {
         if (binding == null) return;
-        boolean pending = payment != null && "PENDING".equals(payment.optString("status"));
-        binding.layoutPaymentDemoControls.setVisibility(pending ? View.VISIBLE : View.GONE);
-        binding.btnPaymentDemoSuccess.setEnabled(!processing);
-        binding.btnPaymentDemoFailure.setEnabled(!processing);
         binding.btnPaymentRetry.setEnabled(!processing);
         binding.progressPayment.setVisibility(processing ? View.VISIBLE : View.GONE);
         if (payment != null)
             binding.tvPaymentStatus.setText(
-                    "Phiên cọc #" + payment.optString("id") + ": " + payment.optString("status"));
+                    "Phiên cọc #"
+                            + payment.optString("id")
+                            + ": "
+                            + paymentStatusLabel(payment.optString("status")));
+    }
+
+    private String paymentStatusLabel(String status) {
+        switch (status) {
+            case "PENDING":
+                return "Chờ thanh toán";
+            case "SUCCEEDED":
+                return "Thanh toán thành công";
+            case "FAILED":
+                return "Thanh toán thất bại";
+            case "EXPIRED":
+                return "Đã hết hạn";
+            case "CANCELLED":
+                return "Đã hủy";
+            case "REFUNDED":
+                return "Đã hoàn tiền";
+            default:
+                return "Chưa xác định";
+        }
     }
 
     private void acceptTerms() {
@@ -141,8 +152,7 @@ public final class BookingPaymentFragment extends Fragment {
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Xác nhận điều khoản thuê")
                 .setMessage(
-                        "Bạn đồng ý giá thuê, tiền cọc và các khoản phí trong yêu cầu này? Thanh"
-                                + " toán hiện dùng sandbox để báo cáo.\n"
+                        "Bạn đồng ý giá thuê, tiền cọc và các khoản phí trong yêu cầu này?\n"
                                 + ApiMapper.feeSummary(current))
                 .setNegativeButton("Quay lại", null)
                 .setPositiveButton("Tôi đồng ý", (dialog, which) -> createPayment())
@@ -185,24 +195,6 @@ public final class BookingPaymentFragment extends Fragment {
                     processing = false;
                     payment = row;
                     renderPayment();
-                },
-                this::paymentError);
-    }
-
-    private void simulate(String status) {
-        if (processing || payment == null) return;
-        processing = true;
-        renderPayment();
-        String id = payment.optString("id");
-        ApiClient.execute(
-                () ->
-                        ApiClient.request(
-                                "POST",
-                                "payments/" + id + "/simulate",
-                                ApiClient.json("status", status)),
-                row -> {
-                    processing = false;
-                    if (binding != null) load();
                 },
                 this::paymentError);
     }

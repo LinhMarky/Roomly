@@ -20,17 +20,13 @@ import java.util.UUID;
  */
 public class DemoChatRepository {
 
-    private static final DemoChatRepository INSTANCE =
-            new DemoChatRepository();
+    private static final DemoChatRepository INSTANCE = new DemoChatRepository();
 
-    private final Map<String, Conversation> conversations =
-            new HashMap<>();
+    private final Map<String, Conversation> conversations = new HashMap<>();
 
-    private final Map<String, String> conversationIdsByRoom =
-            new HashMap<>();
+    private final Map<String, String> conversationIdsByRoom = new HashMap<>();
 
-    private DemoChatRepository() {
-    }
+    private DemoChatRepository() {}
 
     public static DemoChatRepository getInstance() {
         return INSTANCE;
@@ -42,8 +38,7 @@ public class DemoChatRepository {
     public List<Conversation> getConversations() {
         List<Conversation> result = new ArrayList<>();
 
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (!session.isLoggedIn()) {
             return result;
@@ -55,10 +50,10 @@ public class DemoChatRepository {
             }
         }
 
-        result.sort((first, second) -> Long.compare(
-                second.getLastActivityMillis(),
-                first.getLastActivityMillis()
-        ));
+        result.sort(
+                (first, second) ->
+                        Long.compare(
+                                second.getLastActivityMillis(), first.getLastActivityMillis()));
 
         return result;
     }
@@ -68,8 +63,7 @@ public class DemoChatRepository {
      */
     @Nullable
     public Conversation getConversation(String conversationId) {
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (!session.isLoggedIn() || conversationId == null) {
             return null;
@@ -77,8 +71,7 @@ public class DemoChatRepository {
 
         Conversation conversation = conversations.get(conversationId);
 
-        if (conversation == null
-                || !conversation.isParticipant(session.getUserId())) {
+        if (conversation == null || !conversation.isParticipant(session.getUserId())) {
             return null;
         }
 
@@ -90,44 +83,33 @@ public class DemoChatRepository {
      * Chủ trọ trả lời từ danh sách hội thoại của mình.
      */
     public Conversation getOrCreateConversation(RoomCard room) {
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (!session.isLoggedIn()) {
-            throw new IllegalStateException(
-                    "Bạn cần đăng nhập để nhắn tin."
-            );
+            throw new IllegalStateException("Bạn cần đăng nhập để nhắn tin.");
         }
 
         if (!session.hasRole(UserRole.TENANT)) {
             throw new IllegalStateException(
-                    "Bạn cần quyền người thuê để bắt đầu hội thoại với chủ trọ."
-            );
+                    "Bạn cần quyền người thuê để bắt đầu hội thoại với chủ trọ.");
         }
 
         if (!session.isEmailVerified()) {
-            throw new IllegalStateException(
-                    "Bạn cần xác minh email trước khi bắt đầu hội thoại."
-            );
+            throw new IllegalStateException("Bạn cần xác minh email trước khi bắt đầu hội thoại.");
         }
 
         if (room == null) {
-            throw new IllegalArgumentException(
-                    "Không tìm thấy phòng."
-            );
+            throw new IllegalArgumentException("Không tìm thấy phòng.");
         }
 
         // Với bài đăng công khai, lấy lại dữ liệu mới nhất.
         String listingId = cleanText(room.getListingId());
 
         if (!listingId.isEmpty()) {
-            room = DemoAdminListingRepository.getInstance()
-                    .getPublishedRoomCardById(listingId);
+            room = DemoAdminListingRepository.getInstance().getPublishedRoomCardById(listingId);
 
             if (room == null) {
-                throw new IllegalStateException(
-                        "Bài đăng không còn hiển thị."
-                );
+                throw new IllegalStateException("Bài đăng không còn hiển thị.");
             }
         }
 
@@ -136,15 +118,11 @@ public class DemoChatRepository {
         String tenantId = cleanText(session.getUserId());
 
         if (roomId.isEmpty() || hostId.isEmpty() || tenantId.isEmpty()) {
-            throw new IllegalStateException(
-                    "Thiếu mã phòng hoặc thông tin thành viên hội thoại."
-            );
+            throw new IllegalStateException("Thiếu mã phòng hoặc thông tin thành viên hội thoại.");
         }
 
         if (hostId.equals(tenantId)) {
-            throw new IllegalStateException(
-                    "Bạn không thể nhắn tin với chính mình."
-            );
+            throw new IllegalStateException("Bạn không thể nhắn tin với chính mình.");
         }
 
         String roomKey = createRoomKey(roomId, tenantId);
@@ -154,11 +132,8 @@ public class DemoChatRepository {
             Conversation existing = conversations.get(existingId);
 
             if (existing != null) {
-                if (!hostId.equals(existing.getHostId())
-                        || !existing.isParticipant(tenantId)) {
-                    throw new IllegalStateException(
-                            "Thông tin chủ phòng đã thay đổi."
-                    );
+                if (!hostId.equals(existing.getHostId()) || !existing.isParticipant(tenantId)) {
+                    throw new IllegalStateException("Thông tin chủ phòng đã thay đổi.");
                 }
 
                 return existing;
@@ -167,17 +142,17 @@ public class DemoChatRepository {
 
         String id = UUID.randomUUID().toString();
 
-        Conversation conversation = new Conversation(
-                id,
-                roomId,
-                hostId,
-                tenantId,
-                room.getHostName(),
-                session.getFullName(),
-                room.getTitle(),
-                room.getImageResId(),
-                System.currentTimeMillis()
-        );
+        Conversation conversation =
+                new Conversation(
+                        id,
+                        roomId,
+                        hostId,
+                        tenantId,
+                        room.getHostName(),
+                        session.getFullName(),
+                        room.getTitle(),
+                        room.getImageResId(),
+                        System.currentTimeMillis());
 
         conversations.put(id, conversation);
         conversationIdsByRoom.put(roomKey, id);
@@ -188,12 +163,8 @@ public class DemoChatRepository {
     /**
      * Chỉ thành viên đã xác minh email được gửi tin.
      */
-    public boolean sendMessage(
-            String conversationId,
-            String content
-    ) {
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+    public boolean sendMessage(String conversationId, String content) {
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (!session.isLoggedIn() || !session.isEmailVerified()) {
             return false;
@@ -211,18 +182,14 @@ public class DemoChatRepository {
             return false;
         }
 
-        conversation.addMessage(new ChatMessage(
-                trimmedContent,
-                System.currentTimeMillis(),
-                session.getUserId()
-        ));
+        conversation.addMessage(
+                new ChatMessage(trimmedContent, System.currentTimeMillis(), session.getUserId()));
 
         return true;
     }
 
     private String createRoomKey(String roomId, String tenantId) {
-        return roomId.length() + ":" + roomId
-                + tenantId.length() + ":" + tenantId;
+        return roomId.length() + ":" + roomId + tenantId.length() + ":" + tenantId;
     }
 
     private String cleanText(String text) {

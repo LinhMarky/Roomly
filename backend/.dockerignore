@@ -1,8 +1,29 @@
+# Build output and local Maven downloads
 target/
 apache-maven-*/
 maven.zip
-.env
-.env.*
-.git/
-*.log
-*.pid
+**/*.class
+
+# Local configuration and credentials, including files below src/
+**/.local/
+**/.env
+**/.env.*
+**/local.properties
+**/*-private.json
+**/*service-account*.json
+**/*firebase-adminsdk*.json
+**/key.properties
+**/keystore.properties
+**/*.jks
+**/*.keystore
+**/*.p12
+**/*.pfx
+
+# Repository metadata, IDE files and logs
+**/.git/
+**/.idea/
+**/.vscode/
+**/*.iml
+**/*.log
+**/*.pid
+**/*.hprof

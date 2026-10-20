@@ -70,12 +70,19 @@ public class RegisterFragment extends Fragment {
                         getViewLifecycleOwner(),
                         registered -> {
                             if (!Boolean.TRUE.equals(registered)) return;
-                            com.example.roomly.ui.NavigationHelper.whenResumed(this, () -> {
-                                if (!Boolean.TRUE.equals(viewModel.getRegistered().getValue())) return;
-                                viewModel.consumeRegistration();
-                                Toast.makeText(requireContext(), "Đã tạo tài khoản. Hãy đăng nhập và xác minh email.", Toast.LENGTH_LONG).show();
-                                getParentFragmentManager().popBackStack();
-                            });
+                            com.example.roomly.ui.NavigationHelper.whenResumed(
+                                    this,
+                                    () -> {
+                                        if (!Boolean.TRUE.equals(
+                                                viewModel.getRegistered().getValue())) return;
+                                        viewModel.consumeRegistration();
+                                        Toast.makeText(
+                                                        requireContext(),
+                                                        "Đã tạo tài khoản. Hãy đăng nhập và xác minh email.",
+                                                        Toast.LENGTH_LONG)
+                                                .show();
+                                        getParentFragmentManager().popBackStack();
+                                    });
                         });
 
         viewModel.getUiState().observe(getViewLifecycleOwner(), this::renderState);

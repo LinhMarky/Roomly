@@ -1,22 +1,56 @@
-# Secrets and local configuration
-Infra/.env
-Infra/.env.*
-!Infra/.env.example
-**/google-services.json
-**/*service-account*.json
-**/local.properties
-**/.env
-**/.env.*
-!**/.env.example
+# Local data and configuration
+.local/
+.env
+.env.*
+!.env.example
+local.properties
+google-services.json
+*-private.json
+*service-account*.json
+*firebase-adminsdk*.json
 
-# Generated output, caches and isolated database files
-backend/target/
-backend/apache-maven-*/
-backend/maven.zip
-Homely-android/.gradle/
-Homely-android/.kotlin/
-Homely-android/**/build/
-**/*.log
-**/*.pid
+# Android signing credentials
+key.properties
+keystore.properties
+*.jks
+*.keystore
+*.p12
+*.pfx
+
+# Build output and caches; keep Gradle/Maven wrapper JARs versioned.
+.gradle/
+.kotlin/
+build/
+target/
+.externalNativeBuild/
+.cxx/
+captures/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.class
+*.apk
+*.aab
+*.ap_
+*.dex
+*.hprof
+*.log
+*.pid
+/backend/apache-maven-*/
+/backend/maven.zip
+
+# IDE and operating-system files
 .idea/
 .vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+Desktop.ini
+*~
+*.swp
+*.swo
+
+# Generated Java-upgrade tool hooks and logs
+/.github/modernize/

@@ -1,267 +1,115 @@
-# ROOMLY — Hướng dẫn chạy Frontend Android
+# ROOMLY Android
 
-Frontend của ứng dụng tìm phòng trọ ROOMLY được xây dựng bằng Java và XML.
+Ứng dụng Android dùng Java, XML, Fragment, ViewModel, LiveData và ViewBinding. App giao tiếp với backend ROOMLY qua HTTP; namespace và application ID là `com.example.roomly`.
 
-Project Android nằm trong thư mục `Frontend-Mobile-App`.
+## Công cụ
 
-## 1. Công nghệ và thư viện
+| Thành phần | Cấu hình |
+| --- | --- |
+| Android SDK | Compile/target `37`; min SDK `24` |
+| Gradle Wrapper | `9.5.0` |
+| Android Gradle Plugin | `9.3.3` |
+| JVM chạy Gradle | JDK `25`, theo [daemon toolchain](gradle/gradle-daemon-jvm.properties) |
+| Java source/target | `11` |
 
-- Java, XML Layout.
-- ViewBinding.
-- AndroidX Fragment.
-- RecyclerView.
-- Material Components.
-- AppCompat.
-- ConstraintLayout.
-- AndroidX Core và Activity.
+Trên Windows, đặt project trong đường dẫn không dấu, ví dụ `D:/Projects/Roomly`. AGP chặn đường dẫn có ký tự ngoài ASCII; bỏ chặn có thể làm JVM worker không tìm thấy test class.
 
-Các thư viện đã được khai báo trong project. Gradle tự tải khi Sync, không cần cài từng thư viện thủ công.
+Mở chính thư mục `Frontend-Mobile-App` trong Android Studio. Cài SDK 37 và chọn JDK 25 cho Gradle, sau đó đồng bộ project. Dùng wrapper có sẵn; lần tải dependency đầu cần kết nối mạng.
 
-## 2. Môi trường cần chuẩn bị
+Các cấu hình build nằm trong [app/build.gradle.kts](app/build.gradle.kts), [version catalog](gradle/libs.versions.toml) và [Gradle Wrapper](gradle/wrapper/gradle-wrapper.properties).
 
-- Android Studio.
-- Android SDK Platform 37, theo cấu hình hiện tại của project.
-- Máy ảo hoặc điện thoại Android API 24 trở lên.
-- Internet để tải SDK và các thư viện trong lần thiết lập đầu tiên.
+## Kết nối backend
 
-Cấu hình hiện tại:
+Khởi động API theo [README backend](../backend/README.md#chạy-local). Backend mặc định bind `127.0.0.1:18092`.
 
-| Thành phần                       | Cấu hình   |
-| -------------------------------- | ---------- |
-| Ngôn ngữ giao diện               | Java + XML |
-| Android Gradle Plugin            | 9.3.3      |
-| compileSdk                       | 37         |
-| targetSdk                        | 37         |
-| minSdk                           | 24         |
-| Java source/target compatibility | 11         |
+### Android emulator
 
-Java source/target 11 là mức tương thích của code, không phải yêu cầu dùng JDK 11 để chạy Gradle. Khi thiết lập Gradle JDK trong Android Studio, dùng JDK tương thích với phiên bản Gradle/AGP của project.
+App debug mặc định gọi `http://10.0.2.2:18092/api/v1/`. `10.0.2.2` là địa chỉ emulator dùng để truy cập máy tính chạy backend.
 
-Sử dụng Gradle Wrapper đã có trong repository, không cần cài Gradle riêng.
-
-## 3. Lấy code
-
-### Nếu chưa clone repository
-
-Trên GitHub, mở repository của nhóm, chọn **Code → HTTPS** và sao chép URL.
-
-Chạy lệnh sau, thay `URL_REPO_NHOM` bằng URL vừa sao chép:
-
-```bash
-git clone --branch dev URL_REPO_NHOM
-```
-
-### Nếu đã có repository trên máy
-
-Mở terminal tại thư mục gốc repository:
-
-```bash
-git status
-git fetch origin
-git switch dev
-git pull origin dev
-```
-
-Nếu chưa có nhánh `dev` trên máy, dùng:
-
-```bash
-git switch --track origin/dev
-```
-
-Commit hoặc stash các thay đổi đang làm trước khi chuyển nhánh hoặc pull.
-
-## 4. Mở bằng Android Studio
-
-1. Mở Android Studio → chọn **Open**.
-2. Chọn thư mục `Frontend-Mobile-App` bên trong repository.
-3. Đảm bảo thư mục được chọn chứa:
-   - `app/`
-   - `gradle/`
-   - `settings.gradle.kts`
-   - `build.gradle.kts`
-   - `gradlew`
-   - `gradlew.bat`
-4. Chờ Gradle Sync và lập chỉ mục hoàn tất.
-5. Nếu thiếu SDK, cài các thành phần được yêu cầu trong SDK Manager.
-6. Nếu có lỗi Sync, kiểm tra nội dung lỗi trước khi chạy app.
-
-Không mở riêng thư mục `app`. Không dùng thư mục gốc repository làm project Android.
-
-## 5. Chạy ứng dụng
-
-### Máy ảo Android
-
-1. Mở **Device Manager**.
-2. Tạo máy ảo và tải system image phù hợp với máy tính.
-3. Chọn phiên bản Android API 24 trở lên.
-4. Khởi động máy ảo và chờ thiết bị vào màn hình chính.
-5. Chọn cấu hình chạy `app` và thiết bị vừa khởi động.
-6. Bấm **Run ▶**.
-
-### Điện thoại thật
-
-1. Bật **Developer options** trên điện thoại.
-2. Bật **USB debugging**.
-3. Kết nối điện thoại với máy tính qua USB.
-4. Chấp nhận thông báo cho phép USB debugging.
-5. Chọn điện thoại trong Android Studio.
-6. Bấm **Run ▶**.
-
-## 6. Build APK bằng terminal
-
-Các lệnh dưới đây bắt đầu từ thư mục gốc repository.
-
-### Windows PowerShell
+Chọn emulator và bấm Run trong Android Studio, hoặc build từ thư mục này:
 
 ```powershell
-cd Frontend-Mobile-App
-.\gradlew.bat assembleDebug
+.\gradlew.bat :app:assembleDebug
 ```
 
-### macOS/Linux
+### Điện thoại qua USB
 
-```bash
-cd Frontend-Mobile-App
-./gradlew assembleDebug
+Bật USB debugging, kết nối thiết bị và kiểm tra bằng `adb devices`. Chuyển tiếp cổng rồi build với URL phù hợp:
+
+```powershell
+adb reverse tcp:18092 tcp:18092
+.\gradlew.bat -PROOMLY_API_URL=http://127.0.0.1:18092/api/v1/ :app:installDebug
 ```
 
-Nếu báo không có quyền thực thi:
+`installDebug` cần thiết bị được ADB nhận. Chạy lại `adb reverse` khi kết nối thiết bị được tạo lại.
 
-```bash
-chmod +x gradlew
-./gradlew assembleDebug
+### Đổi máy chủ API
+
+Truyền thuộc tính Gradle `ROOMLY_API_URL` khi chạy tác vụ build hoặc install:
+
+```powershell
+.\gradlew.bat -PROOMLY_API_URL=http://10.0.2.2:18092/api/v1/ :app:assembleDebug
 ```
 
-APK được tạo tại:
+Giá trị được đưa vào `BuildConfig.API_BASE_URL`, nên cần build và cài lại app để áp dụng URL mới. Nếu dùng LAN, đặt URL theo IP máy tính và cấu hình `ROOMLY_BIND_ADDRESS` cùng quyền truy cập cổng của backend tương ứng.
 
-```text
-Frontend-Mobile-App/app/build/outputs/apk/debug/app-debug.apk
+## Firebase
+
+App build được khi chưa có `app/google-services.json`; Google Services plugin chỉ được áp dụng khi file này tồn tại.
+
+Để dùng push:
+
+1. Đăng ký Android app có package `com.example.roomly` trong project Firebase của backend.
+2. Tải cấu hình Android vào `app/google-services.json`, rồi đồng bộ và build lại.
+3. Bật Firebase phía server theo [README backend](../backend/README.md#smtp-và-firebase).
+4. Trên Android 13 trở lên, cấp quyền thông báo khi app yêu cầu.
+
+`google-services.json` là cấu hình client local đã được ignore. File service account và khóa Firebase Admin chỉ dùng ở backend.
+
+## Build và kiểm tra
+
+```powershell
+.\gradlew.bat :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
 ```
 
-Nếu terminal đã ở trong `Frontend-Mobile-App`, bỏ qua lệnh `cd`.
+macOS/Linux dùng `sh ./gradlew` thay cho `.\gradlew.bat`.
 
-Build bằng terminal cần JDK tương thích với Gradle/AGP. Nếu build trong Android Studio thành công nhưng terminal thất bại, kiểm tra JDK mà terminal sử dụng.
+| Kết quả | Đường dẫn |
+| --- | --- |
+| APK debug | `app/build/outputs/apk/debug/app-debug.apk` |
+| Báo cáo unit test | `app/build/reports/tests/testDebugUnitTest/index.html` |
+| Báo cáo lint | `app/build/reports/lint-results-debug.html` |
 
-## 7. Chức năng hiện có
+Để biên dịch hoặc chạy instrumentation test:
 
-| Màn hình       | Chức năng                                  |
-| -------------- | ------------------------------------------ |
-| Khám phá       | Danh sách phòng, tìm kiếm theo tên/địa chỉ |
-| Bộ lọc         | Lọc loại phòng, khoảng giá và diện tích    |
-| Chi tiết phòng | Hiển thị thông tin phòng được chọn         |
-| Đã lưu         | Lưu/bỏ lưu và xem danh sách phòng đã lưu   |
-| Đặt lịch       | Chọn ngày, giờ và nhập ghi chú             |
-| Lịch trình     | Xem và hủy lịch hẹn mẫu                    |
-| Cá nhân        | Xem hồ sơ, sửa tên và số điện thoại        |
-
-Phần Tin nhắn đang được xây dựng. Layout danh sách đã có, nhưng chưa hoàn thành chức năng trò chuyện và chưa nối tab.
-
-Giao diện admin và kết nối backend chưa hoàn thành.
-
-## 8. Dữ liệu demo
-
-Ứng dụng hiện dùng dữ liệu mẫu để kiểm tra giao diện:
-
-- Phòng và ảnh mẫu có sẵn trong project.
-- Các repository mẫu giữ dữ liệu trong bộ nhớ.
-- Có thể chuyển tab mà vẫn giữ thông tin đã sửa trong cùng tiến trình app.
-- Khi tiến trình app bị đóng, dữ liệu có thể trở về mặc định.
-- Đặt lịch chưa gửi yêu cầu đến chủ phòng.
-- Email hồ sơ hiện chỉ đọc.
-- Chưa cần API URL hoặc tài khoản backend để chạy demo.
-
-## 9. Cấu trúc thư mục frontend
-
-Các đường dẫn dưới đây tính từ `Frontend-Mobile-App`.
-
-| Đường dẫn                                                | Nội dung                       |
-| -------------------------------------------------------- | ------------------------------ |
-| `app/src/main/java/com/example/roomly/MainActivity.java` | Màn hình chính và điều hướng   |
-| `app/src/main/java/com/example/roomly/data/model/`       | Các lớp dữ liệu                |
-| `app/src/main/java/com/example/roomly/data/repository/`  | Repository dữ liệu mẫu         |
-| `app/src/main/java/com/example/roomly/ui/`               | Fragment và Adapter            |
-| `app/src/main/res/layout/`                               | Giao diện XML                  |
-| `app/src/main/res/drawable/`                             | Ảnh, icon và nền               |
-| `app/src/main/res/menu/`                                 | Menu điều hướng                |
-| `app/src/main/res/color/`                                | Bộ màu theo trạng thái         |
-| `app/src/main/res/values/`                               | Màu, chuỗi và theme            |
-| `app/src/main/AndroidManifest.xml`                       | Cấu hình ứng dụng              |
-| `gradle/libs.versions.toml`                              | Khai báo phiên bản và thư viện |
-
-Không sửa trực tiếp các file Binding trong thư mục `build`. Chúng được sinh tự động từ XML.
-
-## 10. Làm việc bằng VS Code và Android Studio
-
-Hai công cụ có thể mở cùng một thư mục code:
-
-- VS Code: chỉnh sửa file và thao tác Git.
-- Android Studio: Sync Gradle, xem layout, build và chạy app.
-
-Lưu file trước khi chuyển công cụ. Không cần sao chép code giữa hai nơi.
-
-Sau khi pull thay đổi liên quan đến cấu hình Gradle, thực hiện Gradle Sync trong Android Studio.
-
-## 11. Xử lý lỗi thường gặp
-
-### Thiếu Android SDK
-
-Mở SDK Manager, cài SDK theo thông báo lỗi. Project hiện dùng compileSdk 37.
-
-### Không tải được thư viện
-
-Kiểm tra Internet và thông báo lỗi trong cửa sổ Sync/Build, sau đó thực hiện lại Gradle Sync.
-
-### Lớp Binding báo đỏ
-
-1. Kiểm tra Gradle Sync.
-2. Kiểm tra lỗi XML và tên file layout.
-3. Build project để sinh lớp Binding.
-4. Kiểm tra import có đúng package `com.example.roomly.databinding` không.
-
-Không tự tạo lớp Binding bằng tay.
-
-### Import Fragment báo đỏ
-
-Kiểm tra package trong file Java và vị trí thư mục.
-
-Ví dụ:
-
-```java
-package com.example.roomly.ui.schedule;
+```powershell
+.\gradlew.bat :app:assembleDebugAndroidTest
+.\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
-File phải nằm trong:
+`connectedDebugAndroidTest` cần thiết bị/emulator đang kết nối và điều kiện dữ liệu phù hợp với kịch bản test. Unit test và lint không thay thế kiểm tra luồng API, mail, push hoặc thanh toán trên thiết bị.
 
-```text
-app/src/main/java/com/example/roomly/ui/schedule/
+### Gói release
+
+URL release phải dùng HTTPS và trỏ tới máy chủ triển khai. Ví dụ sau cần thay bằng máy chủ của bạn:
+
+```powershell
+.\gradlew.bat -PROOMLY_API_URL=https://api.example.com/api/v1/ :app:assembleRelease
 ```
 
-### Máy ảo không khởi động hoặc Run quá lâu
+Build hiện chưa khai báo khóa ký phát hành. Cấu hình signing riêng trước khi phân phối; khóa ký và mật khẩu được giữ ngoài Git theo [.gitignore gốc](../.gitignore).
 
-Kiểm tra trạng thái thiết bị trong Device Manager và thông báo Run. Có thể thử khởi động lại máy ảo bằng Cold Boot hoặc dùng điện thoại thật.
+## Tổ chức source
 
-### Thông tin cần gửi khi báo lỗi
+| Thư mục trong `app/src/main` | Trách nhiệm |
+| --- | --- |
+| `java/com/example/roomly/data/api` | HTTP client và đọc/ghi JSON |
+| `java/com/example/roomly/data/model` | Model dữ liệu |
+| `java/com/example/roomly/data/repository` | Gọi API và quản lý trạng thái dùng chung |
+| `java/com/example/roomly/ui` | Fragment, ViewModel và adapter |
+| `java/com/example/roomly/push` | Khởi tạo ứng dụng, Firebase và thông báo |
+| `res/layout`, `res/values` | Layout, chuỗi và giao diện |
 
-- Nội dung lỗi trong Sync, Build hoặc Logcat.
-- Nhánh và commit đang chạy.
-- Phiên bản Android Studio.
-- Thiết bị và phiên bản Android.
+Các lớp repository còn tiền tố `Demo` đang gọi API ROOMLY qua `ApiClient`; tiền tố này là tên cũ trong source. Không suy ra rằng dữ liệu của các lớp đó được tạo mô phỏng trên thiết bị.
 
-## 12. File cần đưa lên Git
-
-Commit các file nguồn và cấu hình:
-
-- `Frontend-Mobile-App/app/src/`
-- Các file cấu hình Gradle của project và module.
-- `Frontend-Mobile-App/gradle/`, gồm version catalog và Wrapper.
-- `Frontend-Mobile-App/gradlew`
-- `Frontend-Mobile-App/gradlew.bat`
-- Các file `.gitignore`.
-- `README.md`.
-
-Không commit:
-
-- `local.properties`: chứa đường dẫn SDK riêng của từng máy.
-- Thư mục `.gradle/`.
-- Các thư mục `build/`.
-- Mật khẩu, token hoặc thông tin bí mật.
+Thanh toán hiện dùng sandbox. Với cọc có tiền, app cần kết quả thanh toán hợp lệ từ backend để hoàn tất phiên `PENDING`.
